@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>KeepingTrack - Help with Habits</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f3ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            padding: 16px;
+        }
+        
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .header {
+            text-align: center;
+            margin: 20px 0 30px;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #581c87;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #4b5563;
+            font-size: 14px;
+        }
+        
+        .status {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #7c3aed;
+            color: white;
+        }
+        
+        .btn-primary:hover { background: #6d28d9; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover { background: #d1d5db; }
+        
+        .btn-backup {
+            background: #e5e7eb;
+            color: #374151;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .btn-full {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #581c87;
+            margin-bottom: 16px;
+        }
+        
+        input[type="text"],
+        input[type="date"],
+        input[type="time"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .status-banner {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            text-align: center;
+            font-weight: 600;
+            border: 2px solid;
+        }
+        
+        .status-green {
+            background: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        
+        .status-red {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+        
+        .status-neutral {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+            color: #374151;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-card.blue { background: #dbeafe; }
+        .stat-card.green { background: #d1fae5; }
+        .stat-card.purple { background: #e9d5ff; }
+        .stat-card.red { background: #fee2e2; }
+        .stat-card.gray { background: #f3f4f6; }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #4b5563;
+        }
+        
+        .chart {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .chart-container {
+            position: relative;
+            padding-left: 50px;
+            padding-bottom: 30px;
+        }
+        
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 180px;
+            position: relative;
+            border-left: 2px solid #9ca3af;
+            border-bottom: 2px solid #9ca3af;
+            padding-left: 8px;
+            padding-bottom: 8px;
+        }
+        
+        .y-axis {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 30px;
+            width: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #6b7280;
+        }
+        
+        .y-axis-label {
+            text-align: right;
+            padding-right: 5px;
+        }
+        
+        .y-axis-title {
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: rotate(-90deg) translateX(-50%);
+            transform-origin: left center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #374151;
+            white-space: nowrap;
+        }
+        
+        .x-axis {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 8px;
+            font-size: 10px;
+            color: #6b7280;
+        }
+        
+        .x-axis-title {
+            text-align: center;
+            margin-top: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 11px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            padding: 4px 2px;
+            overflow: hidden;
+        }
+        
+        .chart-bar-label {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            white-space: nowrap;
+        }
+        
+        .chart-bar.green { background: #10b981; }
+        .chart-bar.red { background: #f87171; }
+        .chart-bar.blue { background: #93c5fd; opacity: 0.8; }
+        
+        .history-item {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .icon-btn {
+            background: none;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .icon-btn:hover { color: #374151; }
+        .icon-btn.delete { color: #ef4444; }
+        .icon-btn.edit { color: #3b82f6; }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .btn-group button { flex: 1; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px 16px;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .habit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+        
+        .habit-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .habit-date {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+        
+        .chart-legend {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+        
+        .date-time-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .date-time-field label {
+            display: block;
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .date-time-field input {
+            margin: 0;
+        }
+        
+        @media (max-width: 640px) {
+            body { padding: 8px; }
+            .card { padding: 16px; }
+            .title { font-size: 24px; }
+            .stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .stat-card { padding: 12px; }
+            .stat-value { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app"></div>
+    
+    <script>
+        console.log('LESSLY v1 starting...');
+        
+        let state = {
+            habits: [],
+            userName: '',
+            showNamePrompt: false,
+            showAddForm: false,
+            showLogForm: null,
+            editingEntry: null,
+            editDateTime: '',
+            showExportImport: false,
+            storageStatus: 'ready'
+        };
+        
+        function loadData() {
+            try {
+                const savedHabits = localStorage.getItem('habits-data');
+                if (savedHabits) {
+                    state.habits = JSON.parse(savedHabits);
+                    state.storageStatus = `✓ Loaded ${state.habits.length} habits`;
+                }
+            } catch (e) {
+                state.storageStatus = '⚠️ Load error';
+            }
+            
+            try {
+                const savedName = localStorage.getItem('user-name');
+                if (savedName) {
+                    state.userName = savedName;
+                } else {
+                    state.showNamePrompt = true;
+                }
+            } catch (e) {
+                state.showNamePrompt = true;
+            }
+        }
+        
+        function saveData() {
+            try {
+                localStorage.setItem('habits-data', JSON.stringify(state.habits));
+                state.storageStatus = `✓ Saved ${state.habits.length} habits`;
+            } catch (e) {
+                state.storageStatus = '⚠️ Save error';
+            }
+        }
+        
+        function formatDuration(hours) {
+            if (!hours || hours < 0) return '0 min';
+            
+            const absHours = Math.abs(hours);
+            
+            if (absHours < 1/60) return 'just now';
+            if (absHours < 1) return `${Math.round(absHours * 60)} min`;
+            if (absHours < 24) {
+                const h = Math.floor(absHours);
+                const m = Math.round((absHours - h) * 60);
+                return m > 0 ? `${h}h ${m}m` : `${h}h`;
+            }
+            if (absHours < 24 * 7) {
+                const days = Math.floor(absHours / 24);
+                const hours = Math.round(absHours % 24);
+                return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
+            }
+            if (absHours < 24 * 30) {
+                const weeks = Math.floor(absHours / (24 * 7));
+                const days = Math.floor((absHours % (24 * 7)) / 24);
+                return days > 0 ? `${weeks}w ${days}d` : `${weeks}w`;
+            }
+            if (absHours < 24 * 365) {
+                const months = Math.floor(absHours / (24 * 30));
+                const weeks = Math.floor((absHours % (24 * 30)) / (24 * 7));
+                return weeks > 0 ? `${months}mo ${weeks}w` : `${months}mo`;
+            }
+            const years = Math.floor(absHours / (24 * 365));
+            const months = Math.floor((absHours % (24 * 365)) / (24 * 30));
+            return months > 0 ? `${years}y ${months}mo` : `${years}y`;
+        }
+        
+        function getIntervals(habit) {
+            if (habit.indulgences.length === 0) return [];
+            
+            const intervals = [];
+            const occurrenceDates = habit.indulgences
+                .map(d => new Date(d))
+                .sort((a, b) => a - b);
+            
+            for (let i = 1; i < occurrenceDates.length; i++) {
+                const diffMs = occurrenceDates[i] - occurrenceDates[i - 1];
+                const diffHours = Math.abs(diffMs) / (1000 * 60 * 60);
+                intervals.push({ hours: diffHours, endDate: occurrenceDates[i] });
+            }
+            
+            return intervals;
+        }
+        
+        function getCurrentInterval(habit) {
+            const now = new Date();
+            
+            if (habit.indulgences.length === 0) {
+                const start = new Date(habit.startDate);
+                const diffMs = now - start;
+                return Math.abs(diffMs) / (1000 * 60 * 60);
+            }
+            
+            const occurrenceDates = habit.indulgences
+                .map(d => new Date(d))
+                .sort((a, b) => a - b);
+            const lastOccurrence = occurrenceDates[occurrenceDates.length - 1];
+            const diffMs = now - lastOccurrence;
+            return Math.abs(diffMs) / (1000 * 60 * 60);
+        }
+        
+        function getStatus(habit) {
+            const intervals = getIntervals(habit);
+            const currentInterval = getCurrentInterval(habit);
+            
+            if (intervals.length === 0 && currentInterval < 1/60) {
+                return { 
+                    status: 'neutral', 
+                    message: `It's good you're here, ${state.userName}. We can help you take ownership of your ${habit.name.toLowerCase()}. Let's start by logging your first entry.` 
+                };
+            }
+            
+            if (intervals.length === 0) {
+                return { 
+                    status: 'neutral', 
+                    message: `Good start, ${state.userName}! You've logged your first entry. Keep tracking and we'll show your progress.` 
+                };
+            }
+            
+            const lastInterval = intervals[intervals.length - 1].hours;
+            
+            if (currentInterval >= lastInterval) {
+                const messages = [
+                    `🎉 Amazing work, ${state.userName}! You've exceeded your last interval of ${formatDuration(lastInterval)}. You should be proud!`,
+                    `💪 You're crushing it, ${state.userName}! Already past ${formatDuration(lastInterval)}. Keep this momentum going!`,
+                    `🌟 Incredible, ${state.userName}! You've matched your goal. This is real progress!`
+                ];
+                return { 
+                    status: 'green', 
+                    message: messages[Math.floor(Math.random() * messages.length)]
+                };
+            } else {
+                const remaining = lastInterval - currentInterval;
+                const messages = [
+                    `💙 You're doing well, ${state.userName}. Just ${formatDuration(remaining)} more to match your last interval. You've got this!`,
+                    `🌱 Keep going, ${state.userName}! ${formatDuration(remaining)} to go. Every moment counts and you're making progress.`,
+                    `✊ Stay strong, ${state.userName}. ${formatDuration(remaining)} more and you'll be in the green. Believe in yourself!`
+                ];
+                return { 
+                    status: 'red', 
+                    message: messages[Math.floor(Math.random() * messages.length)]
+                };
+            }
+        }
+        
+        function getTrend(intervals) {
+            if (intervals.length < 2) return 'neutral';
+            const lastTwo = intervals.slice(-2);
+            if (lastTwo[1].hours > lastTwo[0].hours) return 'improving';
+            if (lastTwo[1].hours < lastTwo[0].hours) return 'declining';
+            return 'stable';
+        }
+        
+        function getAverageInterval(intervals) {
+            if (intervals.length === 0) return 0;
+            const sum = intervals.reduce((acc, int) => acc + Math.abs(int.hours), 0);
+            return sum / intervals.length;
+        }
+        
+        function saveNameFromInput() {
+            const input = document.getElementById('userNameInput');
+            if (input && input.value.trim()) {
+                state.userName = input.value.trim();
+                localStorage.setItem('user-name', state.userName);
+                state.showNamePrompt = false;
+                render();
+            }
+        }
+        
+        function addHabit() {
+            const input = document.getElementById('newHabitName');
+            const name = input ? input.value.trim() : '';
+            if (name) {
+                state.habits.push({
+                    id: Date.now(),
+                    name: name,
+                    startDate: new Date().toISOString(),
+                    indulgences: []
+                });
+                state.showAddForm = false;
+                saveData();
+                render();
+            }
+        }
+        
+        function deleteHabit(id) {
+            if (confirm('Are you sure you want to delete this habit? All data will be lost.')) {
+                state.habits = state.habits.filter(h => h.id !== id);
+                saveData();
+                render();
+            }
+        }
+        
+        function logIndulgence(habitId, useCustomTime) {
+            let timestamp;
+            
+            if (useCustomTime) {
+                const dateInput = document.getElementById(`logDate_${habitId}`);
+                const timeInput = document.getElementById(`logTime_${habitId}`);
+                
+                if (!dateInput.value || !timeInput.value) {
+                    alert('Please select both date and time');
+                    return;
+                }
+                
+                timestamp = new Date(dateInput.value + 'T' + timeInput.value).toISOString();
+            } else {
+                timestamp = new Date().toISOString();
+            }
+            
+            state.habits = state.habits.map(habit => {
+                if (habit.id === habitId) {
+                    return {
+                        ...habit,
+                        indulgences: [...habit.indulgences, timestamp].sort()
+                    };
+                }
+                return habit;
+            });
+            
+            state.showLogForm = null;
+            saveData();
+            render();
+        }
+        
+        function deleteIndulgence(habitId, index) {
+            if (confirm('Delete this entry?')) {
+                state.habits = state.habits.map(habit => {
+                    if (habit.id === habitId) {
+                        return {
+                            ...habit,
+                            indulgences: habit.indulgences.filter((_, i) => i !== index)
+                        };
+                    }
+                    return habit;
+                });
+                saveData();
+                render();
+            }
+        }
+        
+        function startEdit(habitId, index, datetime) {
+            state.editingEntry = `${habitId}-${index}`;
+            state.editDateTime = datetime;
+            render();
+        }
+        
+        function updateIndulgence(habitId, index) {
+            const dateInput = document.getElementById(`editDate_${habitId}_${index}`);
+            const timeInput = document.getElementById(`editTime_${habitId}_${index}`);
+            
+            if (dateInput && timeInput && dateInput.value && timeInput.value) {
+                const newDateTime = new Date(dateInput.value + 'T' + timeInput.value).toISOString();
+                
+                state.habits = state.habits.map(habit => {
+                    if (habit.id === habitId) {
+                        const newIndulgences = [...habit.indulgences];
+                        newIndulgences[index] = newDateTime;
+                        return {
+                            ...habit,
+                            indulgences: newIndulgences.sort()
+                        };
+                    }
+                    return habit;
+                });
+                state.editingEntry = null;
+                saveData();
+                render();
+            }
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(state.habits, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `lessly-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        state.habits = JSON.parse(e.target.result);
+                        saveData();
+                        state.showExportImport = false;
+                        alert('Data imported successfully!');
+                        render();
+                    } catch (error) {
+                        alert('Error importing data. Please check the file format.');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+        
+        function render() {
+            const app = document.getElementById('app');
+            
+            let html = '';
+            
+            if (state.showNamePrompt) {
+                html += `
+                    <div class="modal">
+                        <div class="modal-content">
+                            <h2 class="modal-title">Welcome! 👋</h2>
+                            <p style="color: #6b7280; margin-bottom: 24px;">Let's make this personal. What should we call you?</p>
+                            <input type="text" id="userNameInput" placeholder="Enter your first name" value="${state.userName}">
+                            <button class="btn-primary btn-full" onclick="saveNameFromInput();">
+                                Let's Go! 🚀
+                            </button>
+                            <p style="font-size: 11px; color: #9ca3af; text-align: center; margin-top: 12px;">
+                                Don't worry, you can change this anytime
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `
+                <div class="header">
+                    <div class="header-top">
+                        <div></div>
+                        <div style="text-align: center;">
+                            <h1 class="title">${state.userName ? `${state.userName}'s Progress` : 'KeepingTrack - Help with Habits'}</h1>
+                            <p class="subtitle">You're doing great! Track your progress and gradually improve your trends 🌟</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p class="status">${state.storageStatus}</p>
+                            <button class="btn-backup" onclick="state.showExportImport = !state.showExportImport; render();">
+                                ⚙️ Backup
+                            </button>
+                        </div>
+                    </div>
+            `;
+            
+            if (state.showExportImport) {
+                html += `
+                    <div class="card">
+                        <h3 class="section-title">Backup & Restore</h3>
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="exportData()">📥 Export Data</button>
+                            <label style="flex: 1;">
+                                <input type="file" accept=".json" onchange="importData(event)" style="display: none;">
+                                <button class="btn-primary btn-full" onclick="this.parentElement.querySelector('input').click(); event.stopPropagation();">
+                                    📤 Import Data
+                                </button>
+                            </label>
+                        </div>
+                        <p style="font-size: 12px; color: #6b7280; margin-top: 12px;">
+                            Export creates a backup file. Import restores from a backup. Keep your export files safe!
+                        </p>
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+            
+            if (state.habits.length === 0 && !state.showAddForm) {
+                html += `
+                    <div class="empty-state">
+                        <div class="empty-icon">⏰</div>
+                        <p style="font-size: 18px; color: #374151; margin-bottom: 8px;">
+                            Ready to start your journey, ${state.userName}?
+                        </p>
+                        <p style="color: #6b7280; margin-bottom: 24px;">
+                            Every small step counts. Let's track your first habit together! 💪
+                        </p>
+                    </div>
+                `;
+            }
+            
+            if (!state.showAddForm) {
+                html += `
+                    <button class="btn-primary btn-full" onclick="state.showAddForm = true; render();" style="margin-bottom: 24px;">
+                        ➕ Add Habit to Track
+                    </button>
+                `;
+            } else {
+                html += `
+                    <div class="card">
+                        <h3 class="section-title">What habit would you like to work on, ${state.userName}?</h3>
+                        <p style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">
+                            Remember, this is about progress, not perfection. We're here to support you! 🤗
+                        </p>
+                        <input type="text" id="newHabitName" placeholder="e.g., Smoking, Snacking, Phone scrolling...">
+                        <div class="btn-group">
+                            <button class="btn-primary" onclick="addHabit()">Start Tracking</button>
+                            <button class="btn-secondary" onclick="state.showAddForm = false; render();">Cancel</button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            state.habits.forEach(habit => {
+                const intervals = getIntervals(habit);
+                const currentInterval = getCurrentInterval(habit);
+                const trend = getTrend(intervals);
+                const avgInterval = getAverageInterval(intervals);
+                const statusInfo = getStatus(habit);
+                const allIntervals = [...intervals.map(i => i.hours), currentInterval];
+                const maxInterval = Math.max(...allIntervals);
+                
+                html += `
+                    <div class="card">
+                        <div class="habit-header">
+                            <div>
+                                <h3 class="habit-title">${habit.name}</h3>
+                                <p class="habit-date">Tracking since ${new Date(habit.startDate).toLocaleDateString()}</p>
+                            </div>
+                            <button class="icon-btn delete" onclick="deleteHabit(${habit.id})" style="font-size: 20px;">🗑️</button>
+                        </div>
+                        
+                        <div class="status-banner status-${statusInfo.status}">
+                            ${statusInfo.message}
+                        </div>
+                        
+                        <div class="stats">
+                            <div class="stat-card blue">
+                                <div style="font-size: 20px;">⏱️</div>
+                                <div class="stat-value">${habit.indulgences.length === 0 ? 'No data yet' : formatDuration(currentInterval)}</div>
+                                <div class="stat-label">Current Interval</div>
+                            </div>
+                            <div class="stat-card green">
+                                <div style="font-size: 20px;">📊</div>
+                                <div class="stat-value">${intervals.length === 0 ? 'No data yet' : formatDuration(avgInterval)}</div>
+                                <div class="stat-label">Average Interval</div>
+                            </div>
+                            <div class="stat-card ${trend === 'improving' ? 'green' : trend === 'declining' ? 'red' : 'gray'}">
+                                <div style="font-size: 20px;">${trend === 'improving' ? '📈' : trend === 'declining' ? '📉' : '➡️'}</div>
+                                <div class="stat-value">${trend === 'improving' ? '↑' : trend === 'declining' ? '↓' : '→'}</div>
+                                <div class="stat-label">${trend === 'improving' ? 'Improving' : trend === 'declining' ? 'Declining' : 'Stable'}</div>
+                            </div>
+                        </div>
+                `;
+                
+                if (intervals.length > 0) {
+                    const getYAxisLabels = (max) => {
+                        const labels = [];
+                        const steps = 5;
+                        for (let i = 0; i <= steps; i++) {
+                            const value = (max / steps) * i;
+                            labels.unshift(formatDuration(value));
+                        }
+                        return labels;
+                    };
+                    
+                    const yLabels = getYAxisLabels(maxInterval);
+                    const lastInterval = intervals[intervals.length - 1].hours;
+                    const currentIsGood = currentInterval >= lastInterval;
+                    
+                    html += `
+                        <div class="chart">
+                            <h4 class="section-title">Your Progress Journey 📊</h4>
+                            <div class="chart-container">
+                                <div class="y-axis-title">Time Between</div>
+                                <div class="y-axis">
+                                    ${yLabels.map(label => `<div class="y-axis-label">${label}</div>`).join('')}
+                                </div>
+                                <div class="chart-bars">
+                    `;
+                    
+                    intervals.forEach((interval, idx) => {
+                        const height = Math.max((interval.hours / maxInterval) * 100, 10);
+                        const isImproving = idx === 0 || interval.hours >= intervals[idx - 1].hours;
+                        html += `
+                            <div class="chart-bar ${isImproving ? 'green' : 'red'}" 
+                                 style="height: ${height}%">
+                                <div class="chart-bar-label">${formatDuration(interval.hours)}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    const currentHeight = Math.max((currentInterval / maxInterval) * 100, 10);
+                    html += `
+                                    <div class="chart-bar ${currentIsGood ? 'blue' : 'red'}" 
+                                         style="height: ${currentHeight}%">
+                                        <div class="chart-bar-label">${formatDuration(currentInterval)}</div>
+                                    </div>
+                                </div>
+                                <div class="x-axis">
+                    `;
+                    
+                    if (intervals.length <= 7) {
+                        intervals.forEach(interval => {
+                            const date = new Date(interval.endDate);
+                            html += `<div>${date.getMonth() + 1}/${date.getDate()}</div>`;
+                        });
+                    } else {
+                        const firstDate = new Date(intervals[0].endDate);
+                        html += `<div>${firstDate.getMonth() + 1}/${firstDate.getDate()}</div>`;
+                        
+                        const step = Math.floor((intervals.length - 1) / 5);
+                        for (let i = step; i < intervals.length - 1; i += step) {
+                            const date = new Date(intervals[i].endDate);
+                            html += `<div>${date.getMonth() + 1}/${date.getDate()}</div>`;
+                        }
+                        
+                        const lastDate = new Date(intervals[intervals.length - 1].endDate);
+                        html += `<div>${lastDate.getMonth() + 1}/${lastDate.getDate()}</div>`;
+                    }
+                    html += `<div>Now</div>`;
+                    
+                    html += `
+                                </div>
+                                <div class="x-axis-title">Date</div>
+                            </div>
+                            <div class="chart-legend">
+                                <span>🟢 Growing stronger  🔴 Room to improve  🔵 Current (good!)</span>
+                                <span>${intervals.length + 1} intervals</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (state.showLogForm === habit.id) {
+                    html += `
+                        <div class="card" style="background: #f9fafb; padding: 16px; margin-bottom: 16px;">
+                            <h4 class="section-title">Log Occurrence</h4>
+                            <div class="date-time-grid">
+                                <div class="date-time-field">
+                                    <label>Date</label>
+                                    <input type="date" id="logDate_${habit.id}">
+                                </div>
+                                <div class="date-time-field">
+                                    <label>Time</label>
+                                    <input type="time" id="logTime_${habit.id}">
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn-primary" onclick="logIndulgence(${habit.id}, false)">Log Now</button>
+                                <button class="btn-primary" onclick="logIndulgence(${habit.id}, true)">
+                                    Log Custom Time
+                                </button>
+                                <button class="btn-secondary" onclick="state.showLogForm = null; render();">✕</button>
+                            </div>
+                            <p style="font-size: 12px; color: #6b7280; margin-top: 8px; text-align: center;">
+                                💡 Tip: "Log Now" for current time, or pick date + time above
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <button class="btn-primary btn-full" onclick="state.showLogForm = ${habit.id}; render();" style="margin-bottom: 16px;">
+                            Log Occurrence
+                        </button>
+                    `;
+                }
+                
+                if (habit.indulgences.length > 0) {
+                    html += `
+                        <div>
+                            <h4 class="section-title">Your Journey (${habit.indulgences.length} logged)</h4>
+                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">
+                                Every entry is a step toward understanding yourself better. Be honest and kind to yourself. 💙
+                            </p>
+                            <div style="max-height: 240px; overflow-y: auto;">
+                    `;
+                    
+                    habit.indulgences.forEach((indulgence, idx) => {
+                        const editKey = `${habit.id}-${idx}`;
+                        const dateObj = new Date(indulgence);
+                        const dateStr = dateObj.toISOString().split('T')[0];
+                        const timeStr = dateObj.toTimeString().split(' ')[0].substring(0, 5);
+                        
+                        if (state.editingEntry === editKey) {
+                            html += `
+                                <div class="history-item">
+                                    <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                        <input type="date" id="editDate_${habit.id}_${idx}" value="${dateStr}" style="margin: 0; padding: 8px; font-size: 14px;">
+                                        <input type="time" id="editTime_${habit.id}_${idx}" value="${timeStr}" style="margin: 0; padding: 8px; font-size: 14px;">
+                                    </div>
+                                    <div class="history-actions">
+                                        <button class="icon-btn" onclick="updateIndulgence(${habit.id}, ${idx})" style="color: #10b981;">✓</button>
+                                        <button class="icon-btn" onclick="state.editingEntry = null; render();">✕</button>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html += `
+                                <div class="history-item">
+                                    <span style="font-size: 14px;">${dateObj.toLocaleString()}</span>
+                                    <div class="history-actions">
+                                        <button class="icon-btn edit" onclick="startEdit(${habit.id}, ${idx}, '${dateStr}T${timeStr}')">✏️</button>
+                                        <button class="icon-btn delete" onclick="deleteIndulgence(${habit.id}, ${idx})">🗑️</button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += `</div>`;
+            });
+            
+            app.innerHTML = html;
+        }
+        
+        console.log('Initializing LESSLY v1...');
+        try {
+            loadData();
+            render();
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('app').innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2>Error Loading App</h2>
+                    <p>${error.message}</p>
+                    <button onclick="location.reload()">Reload</button>
+                </div>
+            `;
+        }
+    </script>
+    
+    <footer style="text-align: center; padding: 32px 16px 16px; color: #6b7280; font-size: 14px; margin-top: 40px; border-top: 1px solid #e5e7eb;">
+        <p style="margin-bottom: 8px;">Dedicated by Jonathan Blume in memory of his beloved son Israel</p>
+        <p style="font-size: 12px; color: #9ca3af;">May his memory be a blessing</p>
+    </footer>
+</body>
+</html>
