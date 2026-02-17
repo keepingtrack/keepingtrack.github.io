@@ -815,8 +815,8 @@
                 const statusInfo = getStatus(habit);
                 const allIntervals = [...intervals.map(i => i.hours), currentInterval];
                 const maxInterval = Math.max(...allIntervals);
-                const lastInterval = intervals[intervals.length - 1].hours;
-                const currentIsGood = currentInterval >= lastInterval;
+                const lastInterval = intervals.length > 0 ? intervals[intervals.length - 1].hours : null;
+                const currentIsGood = lastInterval === null ? true : currentInterval >= lastInterval;
                 
                 html += `
                     <div class="card">
