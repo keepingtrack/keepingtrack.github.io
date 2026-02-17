@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="KeepingTrack">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#7c3aed">
+    <link rel="manifest" href="manifest.json">
+    <!-- Apple touch icon for iOS home screen -->
+    <link rel="apple-touch-icon" href="icon-192.png">
     <title>KeepingTrack - Help with Habits</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -77,6 +83,23 @@
             color: #374151;
             padding: 8px 16px;
             font-size: 14px;
+        }
+
+        .btn-install {
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            color: white;
+            padding: 10px 18px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-install:hover {
+            background: linear-gradient(135deg, #6d28d9, #1d4ed8);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
+            transform: translateY(-1px);
         }
         
         .btn-full {
@@ -391,13 +414,123 @@
             .stat-card { padding: 12px; }
             .stat-value { font-size: 20px; }
         }
+
+        /* ── Milestone celebration modal ── */
+        .milestone-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(88, 28, 135, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .milestone-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px 28px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(88, 28, 135, 0.35);
+            animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes popIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+
+        .milestone-emoji {
+            font-size: 64px;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .milestone-label {
+            font-size: 22px;
+            font-weight: bold;
+            color: #581c87;
+            margin-bottom: 16px;
+        }
+
+        .milestone-message {
+            font-size: 15px;
+            color: #374151;
+            line-height: 1.6;
+            background: #f5f3ff;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            border-left: 4px solid #7c3aed;
+            text-align: left;
+        }
+
+        .milestone-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+            color: white;
+            flex: 2;
+            font-size: 15px;
+        }
+        .btn-share:hover { opacity: 0.9; }
+
+        .btn-dismiss {
+            background: #e5e7eb;
+            color: #6b7280;
+            flex: 1;
+            font-size: 15px;
+        }
+        .btn-dismiss:hover { background: #d1d5db; }
     </style>
 </head>
 <body>
     <div class="container" id="app"></div>
     
     <script>
-        console.log('LESSLY v1 starting...');
+        console.log('KeepingTrack v2 starting...');
+
+        // ─── PWA Install Logic ───────────────────────────────────────────────
+        let deferredInstallPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            // Re-render so the install button appears
+            render();
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            render();
+        });
+
+        async function installApp() {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            if (outcome === 'accepted') {
+                deferredInstallPrompt = null;
+                render();
+            }
+        }
+
+        // ─── Service Worker Registration ─────────────────────────────────────
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => {
+                    console.warn('Service worker registration failed:', err);
+                });
+            });
+        }
+        // ─────────────────────────────────────────────────────────────────────
         
         let state = {
             habits: [],
@@ -408,7 +541,8 @@
             editingEntry: null,
             editDateTime: '',
             showExportImport: false,
-            storageStatus: 'ready'
+            storageStatus: 'ready',
+            activeMilestone: null   // { habitId, milestone } when a celebration is showing
         };
         
         function loadData() {
@@ -567,6 +701,195 @@
             return sum / intervals.length;
         }
         
+        // ─── Milestone Detection ──────────────────────────────────────────────
+        //
+        // A milestone is stored as a string key in the habit's `milestones` set
+        // so we never show the same one twice.
+        //
+        // Milestones checked after every log:
+        //   first_entry      – logged the very first occurrence
+        //   first_interval   – completed a second entry (first real interval)
+        //   doubled          – current best interval ≥ 2× the first interval
+        //   tripled          – current best interval ≥ 3× the first interval
+        //   avg_doubled      – avg interval doubled vs. baseline (REPEATING — resets each time)
+        //   streak_3         – 3 consecutive improving intervals
+        //   streak_5         – 5 consecutive improving intervals
+        //   week_free        – gone 7+ days since last occurrence
+        //   month_free       – gone 30+ days since last occurrence
+
+        function ordinal(n) {
+            const s = ['th','st','nd','rd'];
+            const v = n % 100;
+            return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        }
+
+        const MILESTONES = {
+            first_entry: {
+                label: '🌱 First Step!',
+                message: (name, habit) =>
+                    `${name} logged their very first entry for "${habit.name}". Every journey starts with a single step — and this is yours! 💙`
+            },
+            first_interval: {
+                label: '📊 First Interval Tracked!',
+                message: (name, habit) => {
+                    const ivs = getIntervals(habit);
+                    return `${name} has completed their first tracked interval for "${habit.name}" — ${formatDuration(ivs[0].hours)}. Now the real progress begins! 🚀`;
+                }
+            },
+            doubled: {
+                label: '🎉 Doubled Their Best!',
+                message: (name, habit) => {
+                    const ivs = getIntervals(habit);
+                    const best = Math.max(...ivs.map(i => i.hours));
+                    return `${name} has more than DOUBLED their best interval for "${habit.name}", reaching ${formatDuration(best)}! That is incredible progress. 🎊`;
+                }
+            },
+            tripled: {
+                label: '🏆 Tripled Their Best!',
+                message: (name, habit) => {
+                    const ivs = getIntervals(habit);
+                    const best = Math.max(...ivs.map(i => i.hours));
+                    return `${name} has TRIPLED their best interval for "${habit.name}", now at ${formatDuration(best)}! This is outstanding dedication. 🌟`;
+                }
+            },
+            avg_doubled: {
+                label: '📈 Average Interval Doubled!',
+                message: (name, habit, count) => {
+                    const ivs = getIntervals(habit);
+                    const avg = getAverageInterval(ivs);
+                    const times = count > 1
+                        ? `for the ${ordinal(count)} time`
+                        : '';
+                    return `${name}'s average interval for "${habit.name}" has DOUBLED${times ? ' ' + times : ''}! Now averaging ${formatDuration(avg)}. Every improvement builds on the last. 📈`;
+                }
+            },
+            streak_3: {
+                label: '🔥 3-Interval Improvement Streak!',
+                message: (name, habit) =>
+                    `${name} has had 3 consecutive improving intervals for "${habit.name}"! Consistency is the key — and ${name} has it. 🔥`
+            },
+            streak_5: {
+                label: '⚡ 5-Interval Improvement Streak!',
+                message: (name, habit) =>
+                    `${name} has achieved 5 consecutive improving intervals for "${habit.name}"! That's not luck — that's real change happening. ⚡`
+            },
+            week_free: {
+                label: '🗓️ One Full Week!',
+                message: (name, habit) =>
+                    `${name} has gone a FULL WEEK without logging "${habit.name}"! Seven days of strength and progress. Keep it going! 🗓️`
+            },
+            month_free: {
+                label: '🌙 One Full Month!',
+                message: (name, habit) =>
+                    `${name} has gone an entire MONTH without logging "${habit.name}"! This is a life-changing achievement. Be proud! 🌙`
+            }
+        };
+
+        function checkMilestones(habit) {
+            // Ensure the milestones set exists on the habit object
+            if (!habit.milestones) habit.milestones = [];
+
+            const earned = new Set(habit.milestones);
+            const newly = [];
+            const ivs = getIntervals(habit);
+            const currentInterval = getCurrentInterval(habit);
+
+            // first_entry
+            if (!earned.has('first_entry') && habit.indulgences.length >= 1) {
+                newly.push('first_entry');
+            }
+
+            // first_interval
+            if (!earned.has('first_interval') && ivs.length >= 1) {
+                newly.push('first_interval');
+            }
+
+            if (ivs.length >= 2) {
+                const firstIv = ivs[0].hours;
+                const bestIv = Math.max(...ivs.map(i => i.hours));
+
+                // doubled
+                if (!earned.has('doubled') && bestIv >= firstIv * 2) {
+                    newly.push('doubled');
+                }
+
+                // tripled
+                if (!earned.has('tripled') && bestIv >= firstIv * 3) {
+                    newly.push('tripled');
+                }
+
+                // avg_doubled — repeating milestone.
+                // We track the baseline in habit.avgDoubledBaseline.
+                // Each time avg reaches 2× the baseline, we fire and reset.
+                {
+                    const avg = getAverageInterval(ivs);
+                    // Set initial baseline from first interval if not yet set
+                    if (!habit.avgDoubledBaseline && ivs.length >= 1) {
+                        habit.avgDoubledBaseline = ivs[0].hours;
+                    }
+                    if (habit.avgDoubledBaseline && avg >= habit.avgDoubledBaseline * 2) {
+                        newly.push('avg_doubled');
+                        // Baseline resets to current avg — will fire again when that doubles
+                        habit.avgDoubledBaseline = avg;
+                    }
+                }
+
+                // streak_3
+                if (!earned.has('streak_3') && ivs.length >= 3) {
+                    const last3 = ivs.slice(-3);
+                    if (last3[1].hours > last3[0].hours && last3[2].hours > last3[1].hours) {
+                        newly.push('streak_3');
+                    }
+                }
+
+                // streak_5
+                if (!earned.has('streak_5') && ivs.length >= 5) {
+                    const last5 = ivs.slice(-5);
+                    const improving = last5.every((iv, i) => i === 0 || iv.hours > last5[i-1].hours);
+                    if (improving) newly.push('streak_5');
+                }
+            }
+
+            // week_free and month_free are based on current open interval
+            if (!earned.has('week_free') && currentInterval >= 24 * 7) {
+                newly.push('week_free');
+            }
+            if (!earned.has('month_free') && currentInterval >= 24 * 30) {
+                newly.push('month_free');
+            }
+
+            return newly;
+        }
+
+        function dismissMilestone() {
+            state.activeMilestone = null;
+            render();
+        }
+
+        function shareMilestone() {
+            if (!state.activeMilestone) return;
+            const { habitId, milestoneKey } = state.activeMilestone;
+            const habit = state.habits.find(h => h.id === habitId);
+            if (!habit) return;
+            const def = MILESTONES[milestoneKey];
+            const text = def.message(state.userName, habit);
+            const shareData = {
+                title: `KeepingTrack: ${def.label}`,
+                text: text + '\n\nTracked with KeepingTrack: https://keepingtrack.github.io'
+            };
+            if (navigator.share) {
+                navigator.share(shareData).catch(() => {});
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(shareData.text).then(() => {
+                    alert('Message copied to clipboard! Paste it anywhere to share. 🎉');
+                }).catch(() => {
+                    alert(shareData.text);
+                });
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         function saveNameFromInput() {
             const input = document.getElementById('userNameInput');
             if (input && input.value.trim()) {
@@ -630,6 +953,36 @@
             
             state.showLogForm = null;
             saveData();
+
+            // ── Check for newly earned milestones ──────────────────────────
+            const updatedHabit = state.habits.find(h => h.id === habitId);
+            if (updatedHabit) {
+                const newMilestones = checkMilestones(updatedHabit);
+                if (newMilestones.length > 0) {
+                    const milestoneKey = newMilestones[newMilestones.length - 1]; // show the highest earned
+                    state.habits = state.habits.map(h => {
+                        if (h.id === habitId) {
+                            // avg_doubled is repeating — track count separately, don't add to earned set
+                            const oneTimeMilestones = newMilestones.filter(m => m !== 'avg_doubled');
+                            const avgDoubledCount = newMilestones.filter(m => m === 'avg_doubled').length;
+                            return {
+                                ...h,
+                                milestones: [...(h.milestones || []), ...oneTimeMilestones],
+                                avgDoubledCount: (h.avgDoubledCount || 0) + avgDoubledCount,
+                                avgDoubledBaseline: h.avgDoubledBaseline // preserve updated baseline from checkMilestones
+                            };
+                        }
+                        return h;
+                    });
+                    saveData();
+                    // Pass count so the message can say "for the 2nd time!" etc.
+                    const displayHabit = state.habits.find(h => h.id === habitId);
+                    const count = milestoneKey === 'avg_doubled' ? (displayHabit.avgDoubledCount || 1) : null;
+                    state.activeMilestone = { habitId, milestoneKey, count };
+                }
+            }
+            // ──────────────────────────────────────────────────────────────
+
             render();
         }
         
@@ -685,7 +1038,7 @@
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `lessly-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `keepingtrack-backup-${new Date().toISOString().split('T')[0]}.json`;
             link.click();
             URL.revokeObjectURL(url);
         }
@@ -731,6 +1084,39 @@
                     </div>
                 `;
             }
+
+            // ── Milestone celebration modal ────────────────────────────────
+            if (state.activeMilestone) {
+                const { habitId, milestoneKey, count } = state.activeMilestone;
+                const habit = state.habits.find(h => h.id === habitId);
+                const def = MILESTONES[milestoneKey];
+                if (habit && def) {
+                    const emoji = def.label.split(' ')[0];
+                    const labelText = def.label.substring(def.label.indexOf(' ') + 1);
+                    const message = def.message(state.userName, habit, count);
+                    html += `
+                        <div class="milestone-modal" onclick="if(event.target===this)dismissMilestone()">
+                            <div class="milestone-content">
+                                <div class="milestone-emoji">${emoji}</div>
+                                <div class="milestone-label">${labelText}</div>
+                                <div class="milestone-message">${message}</div>
+                                <div class="milestone-buttons">
+                                    <button class="btn-share" onclick="shareMilestone()">
+                                        📤 Share This Win
+                                    </button>
+                                    <button class="btn-dismiss" onclick="dismissMilestone()">
+                                        Close
+                                    </button>
+                                </div>
+                                <p style="font-size: 11px; color: #9ca3af; margin-top: 12px;">
+                                    Tap "Share This Win" to send to family or friends for support 💙
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            // ──────────────────────────────────────────────────────────────
             
             html += `
                 <div class="header">
@@ -740,8 +1126,13 @@
                             <h1 class="title">${state.userName ? `${state.userName}'s Progress` : 'KeepingTrack - Help with Habits'}</h1>
                             <p class="subtitle">It's great that you're here! Track your trends and see progress naturally🌟</p>
                         </div>
-                        <div style="text-align: right;">
+                        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                             <p class="status">${state.storageStatus}</p>
+                            ${deferredInstallPrompt ? `
+                            <button class="btn-install" onclick="installApp()">
+                                📲 Install App
+                            </button>
+                            ` : ''}
                             <button class="btn-backup" onclick="state.showExportImport = !state.showExportImport; render();">
                                 ⚙️ Backup
                             </button>
@@ -815,8 +1206,10 @@
                 const statusInfo = getStatus(habit);
                 const allIntervals = [...intervals.map(i => i.hours), currentInterval];
                 const maxInterval = Math.max(...allIntervals);
+                // ── BUG FIX: guard against empty intervals array ──────────────
                 const lastInterval = intervals.length > 0 ? intervals[intervals.length - 1].hours : null;
                 const currentIsGood = lastInterval === null ? true : currentInterval >= lastInterval;
+                // ─────────────────────────────────────────────────────────────
                 
                 html += `
                     <div class="card">
@@ -837,7 +1230,7 @@
                                 <div style="font-size: 20px;">⏱️</div>
                                 <div class="stat-value">${habit.indulgences.length === 0 ? 'No data yet' : formatDuration(currentInterval)}</div>
                                 <div class="stat-label">Elapsed</div>
-                                <div class="stat-label">Keep going!</div>
+                                <div class="stat-label">Try to keep going!</div>
                             </div>
                             <div class="stat-card blue">
                                 <div style="font-size: 20px;">📊</div>
@@ -1017,7 +1410,7 @@
             app.innerHTML = html;
         }
         
-        console.log('Initializing LESSLY v1...');
+        console.log('Initializing KeepingTrack v2...');
         try {
             loadData();
             render();
