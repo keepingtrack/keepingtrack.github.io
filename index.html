@@ -9,50 +9,37 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#7c3aed">
     <link rel="manifest" href="manifest.json">
-    <!-- Apple touch icon for iOS home screen -->
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>KeepingTrack - Help with Habits</title>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #f5f3ff 0%, #e0f2fe 100%);
             min-height: 100vh;
             padding: 16px;
         }
-        
+
         .container { max-width: 800px; margin: 0 auto; }
-        
-        .header {
-            text-align: center;
-            margin: 20px 0 30px;
-        }
-        
+
+        .header { text-align: center; margin: 20px 0 30px; }
+
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-        
-        .title {
-            font-size: 32px;
-            font-weight: bold;
-            color: #581c87;
-            margin-bottom: 8px;
-        }
-        
-        .subtitle {
-            color: #4b5563;
-            font-size: 14px;
-        }
-        
-        .status {
-            font-size: 11px;
-            color: #6b7280;
-        }
-        
+
+        .title { font-size: 32px; font-weight: bold; color: #581c87; margin-bottom: 8px; }
+        .subtitle { color: #4b5563; font-size: 14px; }
+        .status { font-size: 11px; color: #6b7280; }
+
         button {
             border: none;
             border-radius: 8px;
@@ -62,23 +49,14 @@
             font-size: 16px;
             transition: all 0.2s;
         }
-        
-        .btn-primary {
-            background: #7c3aed;
-            color: white;
-        }
-        
+
+        .btn-primary { background: #7c3aed; color: white; }
         .btn-primary:hover { background: #6d28d9; }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        .btn-secondary {
-            background: #e5e7eb;
-            color: #374151;
-        }
-        
+        .btn-secondary { background: #e5e7eb; color: #374151; }
         .btn-secondary:hover { background: #d1d5db; }
-        
-        .btn-backup {
+
+        .btn-export {
             background: #e5e7eb;
             color: #374151;
             padding: 8px 16px;
@@ -93,23 +71,15 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+            box-shadow: 0 2px 8px rgba(124,58,237,0.4);
         }
-
         .btn-install:hover {
-            background: linear-gradient(135deg, #6d28d9, #1d4ed8);
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
+            opacity: 0.9;
             transform: translateY(-1px);
         }
-        
-        .btn-full {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
+
+        .btn-full { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
         .card {
             background: white;
             border-radius: 12px;
@@ -117,7 +87,143 @@
             margin-bottom: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        
+
+        /* ── Auth screen ── */
+        .auth-screen {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 36px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 8px 40px rgba(88,28,135,0.15);
+            text-align: center;
+        }
+
+        .auth-logo {
+            font-size: 56px;
+            margin-bottom: 8px;
+        }
+
+        .auth-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #581c87;
+            margin-bottom: 6px;
+        }
+
+        .auth-subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .btn-google {
+            width: 100%;
+            background: white;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            padding: 14px 20px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+        }
+        .btn-google:hover { background: #f9fafb; border-color: #d1d5db; }
+
+        .btn-email {
+            width: 100%;
+            background: #7c3aed;
+            color: white;
+            padding: 14px 20px;
+            font-size: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+        .btn-email:hover { background: #6d28d9; }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .auth-input:focus { border-color: #7c3aed; }
+
+        .auth-message {
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .auth-message.success { background: #d1fae5; color: #065f46; }
+        .auth-message.error   { background: #fee2e2; color: #991b1b; }
+        .auth-message.info    { background: #dbeafe; color: #1e40af; }
+
+        .auth-note {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+
+        /* ── User menu ── */
+        .user-menu {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .btn-signout {
+            background: none;
+            border: 1px solid #e5e7eb;
+            color: #6b7280;
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+        .btn-signout:hover { background: #f9fafb; color: #374151; }
+
+        .sync-status {
+            font-size: 11px;
+            color: #6b7280;
+        }
+        .sync-status.syncing { color: #7c3aed; }
+        .sync-status.error   { color: #ef4444; }
+
+        /* ── Modal ── */
         .modal {
             position: fixed;
             inset: 0;
@@ -128,7 +234,7 @@
             z-index: 1000;
             padding: 16px;
         }
-        
+
         .modal-content {
             background: white;
             border-radius: 12px;
@@ -136,14 +242,9 @@
             max-width: 400px;
             width: 100%;
         }
-        
-        .modal-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #581c87;
-            margin-bottom: 16px;
-        }
-        
+
+        .modal-title { font-size: 24px; font-weight: bold; color: #581c87; margin-bottom: 16px; }
+
         input[type="text"],
         input[type="date"],
         input[type="time"] {
@@ -154,7 +255,7 @@
             font-size: 16px;
             margin-bottom: 16px;
         }
-        
+
         .status-banner {
             padding: 16px;
             border-radius: 8px;
@@ -163,1274 +264,892 @@
             font-weight: 600;
             border: 2px solid;
         }
-        
-        .status-green {
-            background: #d1fae5;
-            border-color: #10b981;
-            color: #065f46;
-        }
-        
-        .status-red {
-            background: #fee2e2;
-            border-color: #ef4444;
-            color: #991b1b;
-        }
-        
-        .status-neutral {
-            background: #f3f4f6;
-            border-color: #9ca3af;
-            color: #374151;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        
-        .stat-card {
-            padding: 16px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-card.blue { background: #dbeafe; }
-        .stat-card.green { background: #d1fae5; }
+        .status-green  { background: #d1fae5; border-color: #10b981; color: #065f46; }
+        .status-red    { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+        .status-neutral{ background: #f3f4f6; border-color: #9ca3af; color: #374151; }
+
+        .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 24px; }
+        .stat-card { padding: 16px; border-radius: 8px; text-align: center; }
+        .stat-card.blue   { background: #dbeafe; }
+        .stat-card.green  { background: #d1fae5; }
         .stat-card.purple { background: #e9d5ff; }
-        .stat-card.red { background: #fee2e2; }
-        .stat-card.gray { background: #f3f4f6; }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 8px 0;
-        }
-        
-        .stat-label {
-            font-size: 11px;
-            color: #4b5563;
-        }
-        
-        .chart {
-            background: #f9fafb;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 24px;
-        }
-        
-        .chart-container {
-            position: relative;
-            padding-left: 50px;
-            padding-bottom: 30px;
-        }
-        
+        .stat-card.red    { background: #fee2e2; }
+        .stat-card.gray   { background: #f3f4f6; }
+        .stat-value { font-size: 24px; font-weight: bold; margin: 8px 0; }
+        .stat-label { font-size: 11px; color: #4b5563; }
+
+        .chart { background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+        .chart-container { position: relative; padding-left: 50px; padding-bottom: 30px; }
         .chart-bars {
-            display: flex;
-            align-items: flex-end;
-            gap: 4px;
-            height: 180px;
+            display: flex; align-items: flex-end; gap: 4px; height: 180px;
             position: relative;
-            border-left: 2px solid #9ca3af;
-            border-bottom: 2px solid #9ca3af;
-            padding-left: 8px;
-            padding-bottom: 8px;
+            border-left: 2px solid #9ca3af; border-bottom: 2px solid #9ca3af;
+            padding-left: 8px; padding-bottom: 8px;
         }
-        
         .y-axis {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 30px;
-            width: 45px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            font-size: 10px;
-            color: #6b7280;
+            position: absolute; left: 0; top: 0; bottom: 30px; width: 45px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            font-size: 10px; color: #6b7280;
         }
-        
-        .y-axis-label {
-            text-align: right;
-            padding-right: 5px;
-        }
-        
+        .y-axis-label { text-align: right; padding-right: 5px; }
         .y-axis-title {
-            position: absolute;
-            left: -5px;
-            top: 50%;
+            position: absolute; left: -5px; top: 50%;
             transform: rotate(-90deg) translateX(-50%);
             transform-origin: left center;
-            font-size: 11px;
-            font-weight: 600;
-            color: #374151;
-            white-space: nowrap;
+            font-size: 11px; font-weight: 600; color: #374151; white-space: nowrap;
         }
-        
-        .x-axis {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 8px;
-            font-size: 10px;
-            color: #6b7280;
-        }
-        
-        .x-axis-title {
-            text-align: center;
-            margin-top: 5px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #374151;
-        }
-        
+        .x-axis { display: flex; justify-content: space-around; margin-top: 8px; font-size: 10px; color: #6b7280; }
+        .x-axis-title { text-align: center; margin-top: 5px; font-size: 11px; font-weight: 600; color: #374151; }
         .chart-bar {
-            flex: 1;
-            border-radius: 4px 4px 0 0;
-            min-height: 4px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 11px;
+            flex: 1; border-radius: 4px 4px 0 0; min-height: 4px;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 600; font-size: 11px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            padding: 4px 2px;
-            overflow: hidden;
+            padding: 4px 2px; overflow: hidden;
         }
-        
-        .chart-bar-label {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-            white-space: nowrap;
-        }
-        
+        .chart-bar-label { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
         .chart-bar.green { background: #10b981; }
-        .chart-bar.red { background: #f87171; }
-        .chart-bar.blue { background: #93c5fd; opacity: 0.8; }
-        
+        .chart-bar.red   { background: #f87171; }
+        .chart-bar.blue  { background: #93c5fd; opacity: 0.8; }
+
         .history-item {
-            background: #f9fafb;
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
+            background: #f9fafb; padding: 12px; border-radius: 8px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
         }
-        
-        .history-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .icon-btn {
-            background: none;
-            border: none;
-            padding: 4px;
-            cursor: pointer;
-            color: #6b7280;
-        }
-        
+        .history-actions { display: flex; gap: 8px; }
+        .icon-btn { background: none; border: none; padding: 4px; cursor: pointer; color: #6b7280; }
         .icon-btn:hover { color: #374151; }
         .icon-btn.delete { color: #ef4444; }
-        .icon-btn.edit { color: #3b82f6; }
-        
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-        }
-        
+        .icon-btn.edit   { color: #3b82f6; }
+
+        .btn-group { display: flex; gap: 12px; margin-top: 16px; }
         .btn-group button { flex: 1; }
-        
-        .empty-state {
-            text-align: center;
-            padding: 48px 16px;
-        }
-        
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-        
-        .habit-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 16px;
-        }
-        
-        .habit-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #1f2937;
-        }
-        
-        .habit-date {
-            font-size: 13px;
-            color: #6b7280;
-            margin-top: 4px;
-        }
-        
-        .section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 12px;
-        }
-        
-        .chart-legend {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #6b7280;
-            margin-top: 8px;
-        }
-        
-        .date-time-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        
-        .date-time-field label {
-            display: block;
-            font-size: 11px;
-            color: #6b7280;
-            margin-bottom: 4px;
-        }
-        
-        .date-time-field input {
-            margin: 0;
-        }
-        
+
+        .empty-state { text-align: center; padding: 48px 16px; }
+        .empty-icon  { font-size: 48px; margin-bottom: 16px; }
+
+        .habit-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; }
+        .habit-title  { font-size: 20px; font-weight: bold; color: #1f2937; }
+        .habit-date   { font-size: 13px; color: #6b7280; margin-top: 4px; }
+        .section-title{ font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px; }
+        .chart-legend { display: flex; justify-content: space-between; font-size: 11px; color: #6b7280; margin-top: 8px; }
+
+        .date-time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+        .date-time-field label { display: block; font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+        .date-time-field input { margin: 0; }
+
         @media (max-width: 640px) {
             body { padding: 8px; }
             .card { padding: 16px; }
             .title { font-size: 24px; }
-            .stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .stats { grid-template-columns: repeat(3,1fr); gap: 8px; }
             .stat-card { padding: 12px; }
             .stat-value { font-size: 20px; }
+            .auth-card { padding: 28px 20px; }
         }
 
-        /* ── Milestone celebration modal ── */
+        /* ── Milestone modal ── */
         .milestone-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(88, 28, 135, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            padding: 16px;
+            position: fixed; inset: 0;
+            background: rgba(88,28,135,0.7);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000; padding: 16px;
             animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
         .milestone-content {
-            background: white;
-            border-radius: 16px;
-            padding: 32px 28px;
-            max-width: 420px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(88, 28, 135, 0.35);
-            animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: white; border-radius: 16px; padding: 32px 28px;
+            max-width: 420px; width: 100%; text-align: center;
+            box-shadow: 0 20px 60px rgba(88,28,135,0.35);
+            animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
         }
-        @keyframes popIn {
-            from { transform: scale(0.7); opacity: 0; }
-            to   { transform: scale(1);   opacity: 1; }
-        }
+        @keyframes popIn { from { transform:scale(0.7); opacity:0; } to { transform:scale(1); opacity:1; } }
 
-        .milestone-emoji {
-            font-size: 64px;
-            line-height: 1;
-            margin-bottom: 12px;
+        .milestone-emoji  { font-size: 64px; line-height: 1; margin-bottom: 12px; }
+        .milestone-label  { font-size: 22px; font-weight: bold; color: #581c87; margin-bottom: 16px; }
+        .milestone-message{
+            font-size: 15px; color: #374151; line-height: 1.6;
+            background: #f5f3ff; border-radius: 10px; padding: 14px 16px;
+            margin-bottom: 20px; border-left: 4px solid #7c3aed; text-align: left;
         }
-
-        .milestone-label {
-            font-size: 22px;
-            font-weight: bold;
-            color: #581c87;
-            margin-bottom: 16px;
-        }
-
-        .milestone-message {
-            font-size: 15px;
-            color: #374151;
-            line-height: 1.6;
-            background: #f5f3ff;
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 20px;
-            border-left: 4px solid #7c3aed;
-            text-align: left;
-        }
-
-        .milestone-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn-share {
-            background: linear-gradient(135deg, #7c3aed, #2563eb);
-            color: white;
-            flex: 2;
-            font-size: 15px;
-        }
+        .milestone-buttons{ display: flex; gap: 12px; }
+        .btn-share  { background: linear-gradient(135deg,#7c3aed,#2563eb); color: white; flex: 2; font-size: 15px; }
         .btn-share:hover { opacity: 0.9; }
-
-        .btn-dismiss {
-            background: #e5e7eb;
-            color: #6b7280;
-            flex: 1;
-            font-size: 15px;
-        }
+        .btn-dismiss{ background: #e5e7eb; color: #6b7280; flex: 1; font-size: 15px; }
         .btn-dismiss:hover { background: #d1d5db; }
     </style>
 </head>
 <body>
-    <div class="container" id="app"></div>
-    
+    <div id="root"></div>
+
     <script>
-        console.log('KeepingTrack v2 starting...');
+    'use strict';
+    console.log('KeepingTrack v3 starting...');
 
-        // ─── PWA Install Logic ───────────────────────────────────────────────
-        let deferredInstallPrompt = null;
+    // ═══════════════════════════════════════════════════════════════
+    // SUPABASE INIT
+    // ═══════════════════════════════════════════════════════════════
+    const SUPABASE_URL = 'https://nvftcjndmgluapizpqlj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_2JBZI6lhZw3_AOIS48vRZw_r9JWlnDQ';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredInstallPrompt = e;
-            // Re-render so the install button appears
-            render();
+    // ═══════════════════════════════════════════════════════════════
+    // PWA INSTALL
+    // ═══════════════════════════════════════════════════════════════
+    let deferredInstallPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        render();
+    });
+    window.addEventListener('appinstalled', () => { deferredInstallPrompt = null; render(); });
+
+    async function installApp() {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') { deferredInstallPrompt = null; render(); }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // SERVICE WORKER
+    // ═══════════════════════════════════════════════════════════════
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .catch(err => console.warn('SW registration failed:', err));
         });
+    }
 
-        window.addEventListener('appinstalled', () => {
-            deferredInstallPrompt = null;
-            render();
+    // ═══════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════
+    let state = {
+        // auth
+        session: null,
+        authView: 'choose',      // 'choose' | 'email' | 'check-email'
+        authEmail: '',
+        authMessage: null,       // { type: 'success'|'error'|'info', text }
+        authLoading: false,
+
+        // app
+        habits: [],
+        userName: '',
+        showNamePrompt: false,
+        showAddForm: false,
+        showLogForm: null,
+        editingEntry: null,
+        showExport: false,
+        syncStatus: 'idle',      // 'idle' | 'syncing' | 'saved' | 'error'
+        activeMilestone: null
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // AUTH HELPERS
+    // ═══════════════════════════════════════════════════════════════
+    async function signInWithGoogle() {
+        state.authLoading = true; render();
+        const { error } = await sb.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: window.location.href }
         });
+        if (error) { state.authMessage = { type: 'error', text: error.message }; state.authLoading = false; render(); }
+    }
 
-        async function installApp() {
-            if (!deferredInstallPrompt) return;
-            deferredInstallPrompt.prompt();
-            const { outcome } = await deferredInstallPrompt.userChoice;
-            if (outcome === 'accepted') {
-                deferredInstallPrompt = null;
-                render();
-            }
+    async function signInWithEmail() {
+        const email = state.authEmail.trim();
+        if (!email) return;
+        state.authLoading = true; render();
+        const { error } = await sb.auth.signInWithOtp({
+            email,
+            options: { emailRedirectTo: window.location.href }
+        });
+        if (error) {
+            state.authMessage = { type: 'error', text: error.message };
+        } else {
+            state.authView = 'check-email';
+            state.authMessage = { type: 'success', text: `Magic link sent to ${email}. Check your inbox and tap the link to sign in.` };
         }
+        state.authLoading = false;
+        render();
+    }
 
-        // ─── Service Worker Registration ─────────────────────────────────────
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => {
-                    console.warn('Service worker registration failed:', err);
-                });
-            });
-        }
-        // ─────────────────────────────────────────────────────────────────────
-        
-        let state = {
-            habits: [],
-            userName: '',
-            showNamePrompt: false,
-            showAddForm: false,
-            showLogForm: null,
-            editingEntry: null,
-            editDateTime: '',
-            showExportImport: false,
-            storageStatus: 'ready',
-            activeMilestone: null   // { habitId, milestone } when a celebration is showing
-        };
-        
-        function loadData() {
-            try {
-                const savedHabits = localStorage.getItem('habits-data');
-                if (savedHabits) {
-                    state.habits = JSON.parse(savedHabits);
-                    state.storageStatus = `✓ Loaded ${state.habits.length} habits`;
-                }
-            } catch (e) {
-                state.storageStatus = '⚠️ Load error';
-            }
-            
-            try {
-                const savedName = localStorage.getItem('user-name');
-                if (savedName) {
-                    state.userName = savedName;
-                } else {
-                    state.showNamePrompt = true;
-                }
-            } catch (e) {
+    async function signOut() {
+        await sb.auth.signOut();
+        state.session = null;
+        state.habits = [];
+        state.userName = '';
+        state.authView = 'choose';
+        state.authMessage = null;
+        render();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // DATA SYNC — Supabase is the single source of truth
+    // ═══════════════════════════════════════════════════════════════
+    async function loadFromCloud() {
+        if (!state.session) return;
+        state.syncStatus = 'syncing'; render();
+        try {
+            const userId = state.session.user.id;
+            const { data, error } = await sb
+                .from('habits')
+                .select('data')
+                .eq('user_id', userId)
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+
+            if (data) {
+                const parsed = data.data;
+                state.habits   = parsed.habits   || [];
+                state.userName = parsed.userName || '';
+                if (!state.userName) state.showNamePrompt = true;
+            } else {
+                // First time user — no data yet
+                state.habits = [];
                 state.showNamePrompt = true;
             }
+            state.syncStatus = 'saved';
+        } catch (e) {
+            console.error('Load error:', e);
+            state.syncStatus = 'error';
         }
-        
-        function saveData() {
-            try {
-                localStorage.setItem('habits-data', JSON.stringify(state.habits));
-                state.storageStatus = `✓ Saved ${state.habits.length} habits`;
-            } catch (e) {
-                state.storageStatus = '⚠️ Save error';
-            }
-        }
-        
-        function formatDuration(hours) {
-            if (!hours || hours < 0) return '0 min';
-            
-            const absHours = Math.abs(hours);
-            
-            if (absHours < 1/60) return 'just now';
-            if (absHours < 1) return `${Math.round(absHours * 60)} min`;
-            if (absHours < 24) {
-                const h = Math.floor(absHours);
-                const m = Math.round((absHours - h) * 60);
-                return m > 0 ? `${h}h ${m}m` : `${h}h`;
-            }
-            if (absHours < 24 * 7) {
-                const days = Math.floor(absHours / 24);
-                const hours = Math.round(absHours % 24);
-                return hours > 0 ? `${days}d ${hours}h` : `${days}d`;
-            }
-            if (absHours < 24 * 30) {
-                const weeks = Math.floor(absHours / (24 * 7));
-                const days = Math.floor((absHours % (24 * 7)) / 24);
-                return days > 0 ? `${weeks}w ${days}d` : `${weeks}w`;
-            }
-            if (absHours < 24 * 365) {
-                const months = Math.floor(absHours / (24 * 30));
-                const weeks = Math.floor((absHours % (24 * 30)) / (24 * 7));
-                return weeks > 0 ? `${months}mo ${weeks}w` : `${months}mo`;
-            }
-            const years = Math.floor(absHours / (24 * 365));
-            const months = Math.floor((absHours % (24 * 365)) / (24 * 30));
-            return months > 0 ? `${years}y ${months}mo` : `${years}y`;
-        }
-        
-        function getIntervals(habit) {
-            if (habit.indulgences.length === 0) return [];
-            
-            const intervals = [];
-            const occurrenceDates = habit.indulgences
-                .map(d => new Date(d))
-                .sort((a, b) => a - b);
-            
-            for (let i = 1; i < occurrenceDates.length; i++) {
-                const diffMs = occurrenceDates[i] - occurrenceDates[i - 1];
-                const diffHours = Math.abs(diffMs) / (1000 * 60 * 60);
-                intervals.push({ hours: diffHours, endDate: occurrenceDates[i] });
-            }
-            
-            return intervals;
-        }
-        
-        function getCurrentInterval(habit) {
-            const now = new Date();
-            
-            if (habit.indulgences.length === 0) {
-                const start = new Date(habit.startDate);
-                const diffMs = now - start;
-                return Math.abs(diffMs) / (1000 * 60 * 60);
-            }
-            
-            const occurrenceDates = habit.indulgences
-                .map(d => new Date(d))
-                .sort((a, b) => a - b);
-            const lastOccurrence = occurrenceDates[occurrenceDates.length - 1];
-            const diffMs = now - lastOccurrence;
-            return Math.abs(diffMs) / (1000 * 60 * 60);
-        }
-        
-        function getStatus(habit) {
-            const intervals = getIntervals(habit);
-            const currentInterval = getCurrentInterval(habit);
-            
-            if (intervals.length === 0 && currentInterval < 1/60) {
-                return { 
-                    status: 'neutral', 
-                    message: `It's good you're here, ${state.userName}. We can help you take ownership of your ${habit.name.toLowerCase()}. Let's start by logging your first entry.` 
-                };
-            }
-            
-            if (intervals.length === 0) {
-                return { 
-                    status: 'neutral', 
-                    message: `Good start, ${state.userName}! You've logged your first entry. Keep tracking and we'll show your progress.` 
-                };
-            }
-            
-            const lastInterval = intervals[intervals.length - 1].hours;
-            
-            if (currentInterval >= lastInterval) {
-                const messages = [
-                    `🎉 Good work, ${state.userName}. You've exceeded your last interval of ${formatDuration(lastInterval)}. Looking good.`,
-                    `💪 You're in a good place, ${state.userName}. Already past ${formatDuration(lastInterval)}. Keep it up!`,
-                    `🌟 You're in a healthy trend, ${state.userName}.`
-                ];
-                return { 
-                    status: 'green', 
-                    message: messages[Math.floor(Math.random() * messages.length)]
-                };
-            } else {
-                const remaining = lastInterval - currentInterval;
-                const messages = [
-                    `💙 You're doing well, ${state.userName}. Just ${formatDuration(remaining)} more to match your last interval. You've got this!`,
-                    `🌱 Keep going, ${state.userName}! ${formatDuration(remaining)} to go. Every moment counts and you're making progress.`,
-                    `✊ Stay strong, ${state.userName}. ${formatDuration(remaining)} more and you'll be in the green. Believe in yourself!`
-                ];
-                return { 
-                    status: 'red', 
-                    message: messages[Math.floor(Math.random() * messages.length)]
-                };
-            }
-        }
-        
-        function getTrend(intervals) {
-            if (intervals.length < 2) return 'neutral';
-            const lastTwo = intervals.slice(-2);
-            if (lastTwo[1].hours > lastTwo[0].hours) return 'improving';
-            if (lastTwo[1].hours < lastTwo[0].hours) return 'declining';
-            return 'stable';
-        }
-        
-        function getAverageInterval(intervals) {
-            if (intervals.length === 0) return 0;
-            const sum = intervals.reduce((acc, int) => acc + Math.abs(int.hours), 0);
-            return sum / intervals.length;
-        }
-        
-        // ─── Milestone Detection ──────────────────────────────────────────────
-        //
-        // A milestone is stored as a string key in the habit's `milestones` set
-        // so we never show the same one twice.
-        //
-        // Milestones checked after every log:
-        //   first_entry      – logged the very first occurrence
-        //   first_interval   – completed a second entry (first real interval)
-        //   doubled          – current best interval ≥ 2× the first interval
-        //   tripled          – current best interval ≥ 3× the first interval
-        //   avg_doubled      – avg interval doubled vs. baseline (REPEATING — resets each time)
-        //   streak_3         – 3 consecutive improving intervals
-        //   streak_5         – 5 consecutive improving intervals
-        //   week_free        – gone 7+ days since last occurrence
-        //   month_free       – gone 30+ days since last occurrence
+        render();
+    }
 
-        function ordinal(n) {
-            const s = ['th','st','nd','rd'];
-            const v = n % 100;
-            return n + (s[(v - 20) % 10] || s[v] || s[0]);
-        }
-
-        const MILESTONES = {
-            first_entry: {
-                label: '🌱 First Step!',
-                message: (name, habit) =>
-                    `${name} logged their very first entry for "${habit.name}". Every journey starts with a single step — and this is yours! 💙`
-            },
-            first_interval: {
-                label: '📊 First Interval Tracked!',
-                message: (name, habit) => {
-                    const ivs = getIntervals(habit);
-                    return `${name} has completed their first tracked interval for "${habit.name}" — ${formatDuration(ivs[0].hours)}. Now the real progress begins! 🚀`;
-                }
-            },
-            doubled: {
-                label: '🎉 Doubled Their Best!',
-                message: (name, habit) => {
-                    const ivs = getIntervals(habit);
-                    const best = Math.max(...ivs.map(i => i.hours));
-                    return `${name} has more than DOUBLED their best interval for "${habit.name}", reaching ${formatDuration(best)}! That is incredible progress. 🎊`;
-                }
-            },
-            tripled: {
-                label: '🏆 Tripled Their Best!',
-                message: (name, habit) => {
-                    const ivs = getIntervals(habit);
-                    const best = Math.max(...ivs.map(i => i.hours));
-                    return `${name} has TRIPLED their best interval for "${habit.name}", now at ${formatDuration(best)}! This is outstanding dedication. 🌟`;
-                }
-            },
-            avg_doubled: {
-                label: '📈 Average Interval Doubled!',
-                message: (name, habit, count) => {
-                    const ivs = getIntervals(habit);
-                    const avg = getAverageInterval(ivs);
-                    const times = count > 1
-                        ? `for the ${ordinal(count)} time`
-                        : '';
-                    return `${name}'s average interval for "${habit.name}" has DOUBLED${times ? ' ' + times : ''}! Now averaging ${formatDuration(avg)}. Every improvement builds on the last. 📈`;
-                }
-            },
-            streak_3: {
-                label: '🔥 3-Interval Improvement Streak!',
-                message: (name, habit) =>
-                    `${name} has had 3 consecutive improving intervals for "${habit.name}"! Consistency is the key — and ${name} has it. 🔥`
-            },
-            streak_5: {
-                label: '⚡ 5-Interval Improvement Streak!',
-                message: (name, habit) =>
-                    `${name} has achieved 5 consecutive improving intervals for "${habit.name}"! That's not luck — that's real change happening. ⚡`
-            },
-            week_free: {
-                label: '🗓️ One Full Week!',
-                message: (name, habit) =>
-                    `${name} has gone a FULL WEEK without logging "${habit.name}"! Seven days of strength and progress. Keep it going! 🗓️`
-            },
-            month_free: {
-                label: '🌙 One Full Month!',
-                message: (name, habit) =>
-                    `${name} has gone an entire MONTH without logging "${habit.name}"! This is a life-changing achievement. Be proud! 🌙`
-            }
-        };
-
-        function checkMilestones(habit) {
-            // Ensure the milestones set exists on the habit object
-            if (!habit.milestones) habit.milestones = [];
-
-            const earned = new Set(habit.milestones);
-            const newly = [];
-            const ivs = getIntervals(habit);
-            const currentInterval = getCurrentInterval(habit);
-
-            // first_entry
-            if (!earned.has('first_entry') && habit.indulgences.length >= 1) {
-                newly.push('first_entry');
-            }
-
-            // first_interval
-            if (!earned.has('first_interval') && ivs.length >= 1) {
-                newly.push('first_interval');
-            }
-
-            if (ivs.length >= 2) {
-                const firstIv = ivs[0].hours;
-                const bestIv = Math.max(...ivs.map(i => i.hours));
-
-                // doubled
-                if (!earned.has('doubled') && bestIv >= firstIv * 2) {
-                    newly.push('doubled');
-                }
-
-                // tripled
-                if (!earned.has('tripled') && bestIv >= firstIv * 3) {
-                    newly.push('tripled');
-                }
-
-                // avg_doubled — repeating milestone.
-                // We track the baseline in habit.avgDoubledBaseline.
-                // Each time avg reaches 2× the baseline, we fire and reset.
-                {
-                    const avg = getAverageInterval(ivs);
-                    // Set initial baseline from first interval if not yet set
-                    if (!habit.avgDoubledBaseline && ivs.length >= 1) {
-                        habit.avgDoubledBaseline = ivs[0].hours;
-                    }
-                    if (habit.avgDoubledBaseline && avg >= habit.avgDoubledBaseline * 2) {
-                        newly.push('avg_doubled');
-                        // Baseline resets to current avg — will fire again when that doubles
-                        habit.avgDoubledBaseline = avg;
-                    }
-                }
-
-                // streak_3
-                if (!earned.has('streak_3') && ivs.length >= 3) {
-                    const last3 = ivs.slice(-3);
-                    if (last3[1].hours > last3[0].hours && last3[2].hours > last3[1].hours) {
-                        newly.push('streak_3');
-                    }
-                }
-
-                // streak_5
-                if (!earned.has('streak_5') && ivs.length >= 5) {
-                    const last5 = ivs.slice(-5);
-                    const improving = last5.every((iv, i) => i === 0 || iv.hours > last5[i-1].hours);
-                    if (improving) newly.push('streak_5');
-                }
-            }
-
-            // week_free and month_free are based on current open interval
-            if (!earned.has('week_free') && currentInterval >= 24 * 7) {
-                newly.push('week_free');
-            }
-            if (!earned.has('month_free') && currentInterval >= 24 * 30) {
-                newly.push('month_free');
-            }
-
-            return newly;
-        }
-
-        function dismissMilestone() {
-            state.activeMilestone = null;
-            render();
-        }
-
-        function shareMilestone() {
-            if (!state.activeMilestone) return;
-            const { habitId, milestoneKey } = state.activeMilestone;
-            const habit = state.habits.find(h => h.id === habitId);
-            if (!habit) return;
-            const def = MILESTONES[milestoneKey];
-            const text = def.message(state.userName, habit);
-            const shareData = {
-                title: `KeepingTrack: ${def.label}`,
-                text: text + '\n\nTracked with KeepingTrack: https://keepingtrack.github.io'
-            };
-            if (navigator.share) {
-                navigator.share(shareData).catch(() => {});
-            } else {
-                // Fallback: copy to clipboard
-                navigator.clipboard.writeText(shareData.text).then(() => {
-                    alert('Message copied to clipboard! Paste it anywhere to share. 🎉');
-                }).catch(() => {
-                    alert(shareData.text);
-                });
-            }
-        }
-        // ─────────────────────────────────────────────────────────────────────
-
-        function saveNameFromInput() {
-            const input = document.getElementById('userNameInput');
-            if (input && input.value.trim()) {
-                state.userName = input.value.trim();
-                localStorage.setItem('user-name', state.userName);
-                state.showNamePrompt = false;
-                render();
-            }
-        }
-        
-        function addHabit() {
-            const input = document.getElementById('newHabitName');
-            const name = input ? input.value.trim() : '';
-            if (name) {
-                state.habits.push({
-                    id: Date.now(),
-                    name: name,
-                    startDate: new Date().toISOString(),
-                    indulgences: []
-                });
-                state.showAddForm = false;
-                saveData();
-                render();
-            }
-        }
-        
-        function deleteHabit(id) {
-            if (confirm('Are you sure you want to delete this habit? All data will be lost.')) {
-                state.habits = state.habits.filter(h => h.id !== id);
-                saveData();
-                render();
-            }
-        }
-        
-        function logIndulgence(habitId, useCustomTime) {
-            let timestamp;
-            
-            if (useCustomTime) {
-                const dateInput = document.getElementById(`logDate_${habitId}`);
-                const timeInput = document.getElementById(`logTime_${habitId}`);
-                
-                if (!dateInput.value || !timeInput.value) {
-                    alert('Please select both date and time');
-                    return;
-                }
-                
-                timestamp = new Date(dateInput.value + 'T' + timeInput.value).toISOString();
-            } else {
-                timestamp = new Date().toISOString();
-            }
-            
-            state.habits = state.habits.map(habit => {
-                if (habit.id === habitId) {
-                    return {
-                        ...habit,
-                        indulgences: [...habit.indulgences, timestamp].sort()
-                    };
-                }
-                return habit;
-            });
-            
-            state.showLogForm = null;
-            saveData();
-
-            // ── Check for newly earned milestones ──────────────────────────
-            const updatedHabit = state.habits.find(h => h.id === habitId);
-            if (updatedHabit) {
-                const newMilestones = checkMilestones(updatedHabit);
-                if (newMilestones.length > 0) {
-                    const milestoneKey = newMilestones[newMilestones.length - 1]; // show the highest earned
-                    state.habits = state.habits.map(h => {
-                        if (h.id === habitId) {
-                            // avg_doubled is repeating — track count separately, don't add to earned set
-                            const oneTimeMilestones = newMilestones.filter(m => m !== 'avg_doubled');
-                            const avgDoubledCount = newMilestones.filter(m => m === 'avg_doubled').length;
-                            return {
-                                ...h,
-                                milestones: [...(h.milestones || []), ...oneTimeMilestones],
-                                avgDoubledCount: (h.avgDoubledCount || 0) + avgDoubledCount,
-                                avgDoubledBaseline: h.avgDoubledBaseline // preserve updated baseline from checkMilestones
-                            };
-                        }
-                        return h;
-                    });
-                    saveData();
-                    // Pass count so the message can say "for the 2nd time!" etc.
-                    const displayHabit = state.habits.find(h => h.id === habitId);
-                    const count = milestoneKey === 'avg_doubled' ? (displayHabit.avgDoubledCount || 1) : null;
-                    state.activeMilestone = { habitId, milestoneKey, count };
-                }
-            }
-            // ──────────────────────────────────────────────────────────────
-
-            render();
-        }
-        
-        function deleteIndulgence(habitId, index) {
-            if (confirm('Delete this entry?')) {
-                state.habits = state.habits.map(habit => {
-                    if (habit.id === habitId) {
-                        return {
-                            ...habit,
-                            indulgences: habit.indulgences.filter((_, i) => i !== index)
-                        };
-                    }
-                    return habit;
-                });
-                saveData();
-                render();
-            }
-        }
-        
-        function startEdit(habitId, index, datetime) {
-            state.editingEntry = `${habitId}-${index}`;
-            state.editDateTime = datetime;
-            render();
-        }
-        
-        function updateIndulgence(habitId, index) {
-            const dateInput = document.getElementById(`editDate_${habitId}_${index}`);
-            const timeInput = document.getElementById(`editTime_${habitId}_${index}`);
-            
-            if (dateInput && timeInput && dateInput.value && timeInput.value) {
-                const newDateTime = new Date(dateInput.value + 'T' + timeInput.value).toISOString();
-                
-                state.habits = state.habits.map(habit => {
-                    if (habit.id === habitId) {
-                        const newIndulgences = [...habit.indulgences];
-                        newIndulgences[index] = newDateTime;
-                        return {
-                            ...habit,
-                            indulgences: newIndulgences.sort()
-                        };
-                    }
-                    return habit;
-                });
-                state.editingEntry = null;
-                saveData();
-                render();
-            }
-        }
-        
-        function exportData() {
-            const dataStr = JSON.stringify(state.habits, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `keepingtrack-backup-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
-        
-        function importData(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        state.habits = JSON.parse(e.target.result);
-                        saveData();
-                        state.showExportImport = false;
-                        alert('Data imported successfully!');
-                        render();
-                    } catch (error) {
-                        alert('Error importing data. Please check the file format.');
-                    }
-                };
-                reader.readAsText(file);
-            }
-        }
-        
-        function render() {
-            const app = document.getElementById('app');
-            
-            let html = '';
-            
-            if (state.showNamePrompt) {
-                html += `
-                    <div class="modal">
-                        <div class="modal-content">
-                            <h2 class="modal-title">Welcome! 👋</h2>
-                            <p style="color: #6b7280; margin-bottom: 24px;">Let's make this personal. What should we call you?</p>
-                            <input type="text" id="userNameInput" placeholder="Enter your first name" value="${state.userName}">
-                            <button class="btn-primary btn-full" onclick="saveNameFromInput();">
-                                Let's Go! 🚀
-                            </button>
-                            <p style="font-size: 11px; color: #9ca3af; text-align: center; margin-top: 12px;">
-                                Don't worry, you can change this anytime
-                            </p>
-                        </div>
-                    </div>
-                `;
-            }
-
-            // ── Milestone celebration modal ────────────────────────────────
-            if (state.activeMilestone) {
-                const { habitId, milestoneKey, count } = state.activeMilestone;
-                const habit = state.habits.find(h => h.id === habitId);
-                const def = MILESTONES[milestoneKey];
-                if (habit && def) {
-                    const emoji = def.label.split(' ')[0];
-                    const labelText = def.label.substring(def.label.indexOf(' ') + 1);
-                    const message = def.message(state.userName, habit, count);
-                    html += `
-                        <div class="milestone-modal" onclick="if(event.target===this)dismissMilestone()">
-                            <div class="milestone-content">
-                                <div class="milestone-emoji">${emoji}</div>
-                                <div class="milestone-label">${labelText}</div>
-                                <div class="milestone-message">${message}</div>
-                                <div class="milestone-buttons">
-                                    <button class="btn-share" onclick="shareMilestone()">
-                                        📤 Share This Win
-                                    </button>
-                                    <button class="btn-dismiss" onclick="dismissMilestone()">
-                                        Close
-                                    </button>
-                                </div>
-                                <p style="font-size: 11px; color: #9ca3af; margin-top: 12px;">
-                                    Tap "Share This Win" to send to family or friends for support 💙
-                                </p>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-            // ──────────────────────────────────────────────────────────────
-            
-            html += `
-                <div class="header">
-                    <div class="header-top">
-                        <div></div>
-                        <div style="text-align: center;">
-                            <h1 class="title">${state.userName ? `${state.userName}'s Progress` : 'KeepingTrack - Help with Habits'}</h1>
-                            <p class="subtitle">It's great that you're here! Track your trends and see progress naturally🌟</p>
-                        </div>
-                        <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-                            <p class="status">${state.storageStatus}</p>
-                            ${deferredInstallPrompt ? `
-                            <button class="btn-install" onclick="installApp()">
-                                📲 Install App
-                            </button>
-                            ` : ''}
-                            <button class="btn-backup" onclick="state.showExportImport = !state.showExportImport; render();">
-                                ⚙️ Backup
-                            </button>
-                        </div>
-                    </div>
-            `;
-            
-            if (state.showExportImport) {
-                html += `
-                    <div class="card">
-                        <h3 class="section-title">Backup & Restore</h3>
-                        <div class="btn-group">
-                            <button class="btn-primary" onclick="exportData()">📥 Export Data</button>
-                            <label style="flex: 1;">
-                                <input type="file" accept=".json" onchange="importData(event)" style="display: none;">
-                                <button class="btn-primary btn-full" onclick="this.parentElement.querySelector('input').click(); event.stopPropagation();">
-                                    📤 Import Data
-                                </button>
-                            </label>
-                        </div>
-                        <p style="font-size: 12px; color: #6b7280; margin-top: 12px;">
-                            Export creates a backup file. Import restores from a backup. Keep your export files safe!
-                        </p>
-                    </div>
-                `;
-            }
-            
-            html += `</div>`;
-            
-            if (state.habits.length === 0 && !state.showAddForm) {
-                html += `
-                    <div class="empty-state">
-                        <div class="empty-icon">⏰</div>
-                        <p style="font-size: 18px; color: #374151; margin-bottom: 8px;">
-                            Ready to start your journey, ${state.userName}?
-                        </p>
-                        <p style="color: #6b7280; margin-bottom: 24px;">
-                            Every small step counts. Let's track your first habit together! 💪
-                        </p>
-                    </div>
-                `;
-            }
-            
-            if (!state.showAddForm) {
-                html += `
-                    <button class="btn-primary btn-full" onclick="state.showAddForm = true; render();" style="margin-bottom: 24px;">
-                        ➕ Add Habit to Track
-                    </button>
-                `;
-            } else {
-                html += `
-                    <div class="card">
-                        <h3 class="section-title">What habit would you like to work on, ${state.userName}?</h3>
-                        <p style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">
-                            Remember, this is about progress, not perfection. We're here to support you! 🤗
-                        </p>
-                        <input type="text" id="newHabitName" placeholder="e.g., Smoking, Snacking, Phone scrolling...">
-                        <div class="btn-group">
-                            <button class="btn-primary" onclick="addHabit()">Start Tracking</button>
-                            <button class="btn-secondary" onclick="state.showAddForm = false; render();">Cancel</button>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            state.habits.forEach(habit => {
-                const intervals = getIntervals(habit);
-                const currentInterval = getCurrentInterval(habit);
-                const trend = getTrend(intervals);
-                const avgInterval = getAverageInterval(intervals);
-                const statusInfo = getStatus(habit);
-                const allIntervals = [...intervals.map(i => i.hours), currentInterval];
-                const maxInterval = Math.max(...allIntervals);
-                // ── BUG FIX: guard against empty intervals array ──────────────
-                const lastInterval = intervals.length > 0 ? intervals[intervals.length - 1].hours : null;
-                const currentIsGood = lastInterval === null ? true : currentInterval >= lastInterval;
-                // ─────────────────────────────────────────────────────────────
-                
-                html += `
-                    <div class="card">
-                        <div class="habit-header">
-                            <div>
-                                <h3 class="habit-title">${habit.name}</h3>
-                                <p class="habit-date">Tracking since ${new Date(habit.startDate).toLocaleDateString()}</p>
-                            </div>
-                            <button class="icon-btn delete" onclick="deleteHabit(${habit.id})" style="font-size: 20px;">🗑️</button>
-                        </div>
-                        
-                        <div class="status-banner status-${statusInfo.status}">
-                            ${statusInfo.message}
-                        </div>
-                        
-                        <div class="stats">
-                            <div class="stat-card ${currentIsGood ? 'blue' : 'red'}">
-                                <div style="font-size: 20px;">⏱️</div>
-                                <div class="stat-value">${habit.indulgences.length === 0 ? 'No data yet' : formatDuration(currentInterval)}</div>
-                                <div class="stat-label">Elapsed</div>
-                                <div class="stat-label">Try to keep going!</div>
-                            </div>
-                            <div class="stat-card blue">
-                                <div style="font-size: 20px;">📊</div>
-                                <div class="stat-value">${intervals.length === 0 ? 'No data yet' : formatDuration(avgInterval)}</div>
-                                <div class="stat-label">Average Interval</div>
-                            </div>
-                            <div class="stat-card ${trend === 'improving' ? 'green' : trend === 'declining' ? 'red' : 'gray'}">
-                                <div style="font-size: 20px;">${trend === 'improving' ? '♥' : trend === 'declining' ? '⛔' : '♥'}</div>
-                                <div class="stat-value">${trend === 'improving' ? 'Improving' : trend === 'declining' ? 'Declining' : 'Stable'}</div>
-                                <div class="stat-label">Current Trend</div>
-                            </div>
-                        </div>
-                `;
-                
-                if (intervals.length > 0) {
-                    const getYAxisLabels = (max) => {
-                        const labels = [];
-                        const steps = 5;
-                        for (let i = 0; i <= steps; i++) {
-                            const value = (max / steps) * i;
-                            labels.unshift(formatDuration(value));
-                        }
-                        return labels;
-                    };
-                    
-                    const yLabels = getYAxisLabels(maxInterval);
-                    
-                    html += `
-                        <div class="chart">
-                            <h4 class="section-title">Your Progress Journey 📊</h4>
-                            <div class="chart-container">
-                                <div class="y-axis-title">Time Between</div>
-                                <div class="y-axis">
-                                    ${yLabels.map(label => `<div class="y-axis-label">${label}</div>`).join('')}
-                                </div>
-                                <div class="chart-bars">
-                    `;
-                    
-                    intervals.forEach((interval, idx) => {
-                        const height = Math.max((interval.hours / maxInterval) * 100, 10);
-                        const isImproving = idx === 0 || interval.hours >= intervals[idx - 1].hours;
-                        html += `
-                            <div class="chart-bar ${isImproving ? 'green' : 'red'}" 
-                                 style="height: ${height}%">
-                                <div class="chart-bar-label">${formatDuration(interval.hours)}</div>
-                            </div>
-                        `;
-                    });
-                    
-                    const currentHeight = Math.max((currentInterval / maxInterval) * 100, 10);
-                    html += `
-                                    <div class="chart-bar ${currentIsGood ? 'blue' : 'red'}" 
-                                         style="height: ${currentHeight}%">
-                                        <div class="chart-bar-label">${formatDuration(currentInterval)}</div>
-                                    </div>
-                                </div>
-                                <div class="x-axis">
-                    `;
-                    
-                    if (intervals.length <= 7) {
-                        intervals.forEach(interval => {
-                            const date = new Date(interval.endDate);
-                            html += `<div>${date.getMonth() + 1}/${date.getDate()}</div>`;
-                        });
-                    } else {
-                        const firstDate = new Date(intervals[0].endDate);
-                        html += `<div>${firstDate.getMonth() + 1}/${firstDate.getDate()}</div>`;
-                        
-                        const step = Math.floor((intervals.length - 1) / 5);
-                        for (let i = step; i < intervals.length - 1; i += step) {
-                            const date = new Date(intervals[i].endDate);
-                            html += `<div>${date.getMonth() + 1}/${date.getDate()}</div>`;
-                        }
-                        
-                        const lastDate = new Date(intervals[intervals.length - 1].endDate);
-                        html += `<div>${lastDate.getMonth() + 1}/${lastDate.getDate()}</div>`;
-                    }
-                    html += `<div>Now</div>`;
-                    
-                    html += `
-                                </div>
-                                <div class="x-axis-title">Date</div>
-                            </div>
-                            <div class="chart-legend">
-                                <span>🟢 Growing stronger  🔴 Room to improve  🔵 Current (good!)</span>
-                                <span>${intervals.length + 1} intervals</span>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                if (state.showLogForm === habit.id) {
-                    html += `
-                        <div class="card" style="background: #f9fafb; padding: 16px; margin-bottom: 16px;">
-                            <h4 class="section-title">Log Occurrence</h4>
-                            <div class="date-time-grid">
-                                <div class="date-time-field">
-                                    <label>Date</label>
-                                    <input type="date" id="logDate_${habit.id}">
-                                </div>
-                                <div class="date-time-field">
-                                    <label>Time</label>
-                                    <input type="time" id="logTime_${habit.id}">
-                                </div>
-                            </div>
-                            <div class="btn-group">
-                                <button class="btn-primary" onclick="logIndulgence(${habit.id}, false)">Log Now</button>
-                                <button class="btn-primary" onclick="logIndulgence(${habit.id}, true)">
-                                    Log Custom Time
-                                </button>
-                                <button class="btn-secondary" onclick="state.showLogForm = null; render();">✕</button>
-                            </div>
-                            <p style="font-size: 12px; color: #6b7280; margin-top: 8px; text-align: center;">
-                                💡 Tip: "Log Now" for current time, or pick date + time above
-                            </p>
-                        </div>
-                    `;
-                } else {
-                    html += `
-                        <button class="btn-primary btn-full" onclick="state.showLogForm = ${habit.id}; render();" style="margin-bottom: 16px;">
-                            Log Occurrence
-                        </button>
-                    `;
-                }
-                
-                if (habit.indulgences.length > 0) {
-                    html += `
-                        <div>
-                            <h4 class="section-title">Your Journey (${habit.indulgences.length} logged)</h4>
-                            <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">
-                                Every entry is a step toward understanding yourself better. Be honest and kind to yourself. 💙
-                            </p>
-                            <div style="max-height: 240px; overflow-y: auto;">
-                    `;
-                    
-                    habit.indulgences.forEach((indulgence, idx) => {
-                        const editKey = `${habit.id}-${idx}`;
-                        const dateObj = new Date(indulgence);
-                        const dateStr = dateObj.toISOString().split('T')[0];
-                        const timeStr = dateObj.toTimeString().split(' ')[0].substring(0, 5);
-                        
-                        if (state.editingEntry === editKey) {
-                            html += `
-                                <div class="history-item">
-                                    <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                        <input type="date" id="editDate_${habit.id}_${idx}" value="${dateStr}" style="margin: 0; padding: 8px; font-size: 14px;">
-                                        <input type="time" id="editTime_${habit.id}_${idx}" value="${timeStr}" style="margin: 0; padding: 8px; font-size: 14px;">
-                                    </div>
-                                    <div class="history-actions">
-                                        <button class="icon-btn" onclick="updateIndulgence(${habit.id}, ${idx})" style="color: #10b981;">✓</button>
-                                        <button class="icon-btn" onclick="state.editingEntry = null; render();">✕</button>
-                                    </div>
-                                </div>
-                            `;
-                        } else {
-                            html += `
-                                <div class="history-item">
-                                    <span style="font-size: 14px;">${dateObj.toLocaleString()}</span>
-                                    <div class="history-actions">
-                                        <button class="icon-btn edit" onclick="startEdit(${habit.id}, ${idx}, '${dateStr}T${timeStr}')">✏️</button>
-                                        <button class="icon-btn delete" onclick="deleteIndulgence(${habit.id}, ${idx})">🗑️</button>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    });
-                    
-                    html += `
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                html += `</div>`;
-            });
-            
-            app.innerHTML = html;
-        }
-        
-        console.log('Initializing KeepingTrack v2...');
+    async function saveToCloud() {
+        if (!state.session) return;
+        state.syncStatus = 'syncing'; render();
         try {
-            loadData();
-            render();
-        } catch (error) {
-            console.error('Error:', error);
-            document.getElementById('app').innerHTML = `
-                <div style="padding: 20px; text-align: center;">
-                    <h2>Error Loading App</h2>
-                    <p>${error.message}</p>
-                    <button onclick="location.reload()">Reload</button>
-                </div>
-            `;
+            const userId = state.session.user.id;
+            const payload = { habits: state.habits, userName: state.userName };
+            const { error } = await sb
+                .from('habits')
+                .upsert({ user_id: userId, data: payload, updated_at: new Date().toISOString() },
+                         { onConflict: 'user_id' });
+            if (error) throw error;
+            state.syncStatus = 'saved';
+        } catch (e) {
+            console.error('Save error:', e);
+            state.syncStatus = 'error';
         }
+        render();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // EXPORT (kept as a quiet option)
+    // ═══════════════════════════════════════════════════════════════
+    function exportData() {
+        const dataStr = JSON.stringify({ habits: state.habits, userName: state.userName }, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url  = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href  = url;
+        link.download = `keepingtrack-export-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // HABIT LOGIC  (unchanged from v2)
+    // ═══════════════════════════════════════════════════════════════
+    function formatDuration(hours) {
+        if (!hours || hours < 0) return '0 min';
+        const h = Math.abs(hours);
+        if (h < 1/60)    return 'just now';
+        if (h < 1)       return `${Math.round(h * 60)} min`;
+        if (h < 24)      { const hh = Math.floor(h), mm = Math.round((h-hh)*60); return mm > 0 ? `${hh}h ${mm}m` : `${hh}h`; }
+        if (h < 24*7)    { const d = Math.floor(h/24), hh = Math.round(h%24); return hh > 0 ? `${d}d ${hh}h` : `${d}d`; }
+        if (h < 24*30)   { const w = Math.floor(h/(24*7)), d = Math.floor((h%(24*7))/24); return d > 0 ? `${w}w ${d}d` : `${w}w`; }
+        if (h < 24*365)  { const mo = Math.floor(h/(24*30)), w = Math.floor((h%(24*30))/(24*7)); return w > 0 ? `${mo}mo ${w}w` : `${mo}mo`; }
+        const y = Math.floor(h/(24*365)), mo = Math.floor((h%(24*365))/(24*30));
+        return mo > 0 ? `${y}y ${mo}mo` : `${y}y`;
+    }
+
+    function getIntervals(habit) {
+        if (habit.indulgences.length < 2) return [];
+        const dates = habit.indulgences.map(d => new Date(d)).sort((a,b) => a-b);
+        const ivs = [];
+        for (let i = 1; i < dates.length; i++) {
+            ivs.push({ hours: Math.abs(dates[i]-dates[i-1]) / 3600000, endDate: dates[i] });
+        }
+        return ivs;
+    }
+
+    function getCurrentInterval(habit) {
+        const now = new Date();
+        if (habit.indulgences.length === 0) {
+            return Math.abs(now - new Date(habit.startDate)) / 3600000;
+        }
+        const last = habit.indulgences.map(d => new Date(d)).sort((a,b) => a-b).at(-1);
+        return Math.abs(now - last) / 3600000;
+    }
+
+    function getStatus(habit) {
+        const ivs = getIntervals(habit);
+        const cur = getCurrentInterval(habit);
+        if (ivs.length === 0 && cur < 1/60) return { status:'neutral', message:`It's good you're here, ${state.userName}. Let's start by logging your first entry.` };
+        if (ivs.length === 0) return { status:'neutral', message:`Good start, ${state.userName}! You've logged your first entry. Keep tracking and we'll show your progress.` };
+        const last = ivs.at(-1).hours;
+        if (cur >= last) {
+            const msgs = [
+                `🎉 Good work, ${state.userName}. You've exceeded your last interval of ${formatDuration(last)}. Looking good.`,
+                `💪 You're in a good place, ${state.userName}. Already past ${formatDuration(last)}. Keep it up!`,
+                `🌟 You're in a healthy trend, ${state.userName}.`
+            ];
+            return { status:'green', message: msgs[Math.floor(Math.random()*msgs.length)] };
+        } else {
+            const rem = last - cur;
+            const msgs = [
+                `💙 You're doing well, ${state.userName}. Just ${formatDuration(rem)} more to match your last interval. You've got this!`,
+                `🌱 Keep going, ${state.userName}! ${formatDuration(rem)} to go. Every moment counts.`,
+                `✊ Stay strong, ${state.userName}. ${formatDuration(rem)} more and you'll be in the green.`
+            ];
+            return { status:'red', message: msgs[Math.floor(Math.random()*msgs.length)] };
+        }
+    }
+
+    function getTrend(ivs) {
+        if (ivs.length < 2) return 'neutral';
+        const [a, b] = ivs.slice(-2);
+        return b.hours > a.hours ? 'improving' : b.hours < a.hours ? 'declining' : 'stable';
+    }
+
+    function getAverageInterval(ivs) {
+        if (!ivs.length) return 0;
+        return ivs.reduce((acc, i) => acc + Math.abs(i.hours), 0) / ivs.length;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // MILESTONES
+    // ═══════════════════════════════════════════════════════════════
+    function ordinal(n) {
+        const s = ['th','st','nd','rd'], v = n % 100;
+        return n + (s[(v-20)%10] || s[v] || s[0]);
+    }
+
+    const MILESTONES = {
+        first_entry:    { label:'🌱 First Step!',                  message:(n,h)    => `${n} logged their very first entry for "${h.name}". Every journey starts with a single step — and this is yours! 💙` },
+        first_interval: { label:'📊 First Interval Tracked!',      message:(n,h)    => { const iv=getIntervals(h); return `${n} has completed their first tracked interval for "${h.name}" — ${formatDuration(iv[0]?.hours||0)}. Now the real progress begins! 🚀`; } },
+        doubled:        { label:'🎉 Doubled Their Best!',           message:(n,h)    => { const best=Math.max(...getIntervals(h).map(i=>i.hours)); return `${n} has more than DOUBLED their best interval for "${h.name}", reaching ${formatDuration(best)}! Incredible progress. 🎊`; } },
+        tripled:        { label:'🏆 Tripled Their Best!',           message:(n,h)    => { const best=Math.max(...getIntervals(h).map(i=>i.hours)); return `${n} has TRIPLED their best interval for "${h.name}", now at ${formatDuration(best)}! Outstanding dedication. 🌟`; } },
+        avg_doubled:    { label:'📈 Average Interval Doubled!',     message:(n,h,c)  => { const avg=getAverageInterval(getIntervals(h)); const times=c>1?` for the ${ordinal(c)} time`:``; return `${n}'s average interval for "${h.name}" has DOUBLED${times}! Now averaging ${formatDuration(avg)}. Every improvement builds on the last. 📈`; } },
+        streak_3:       { label:'🔥 3-Interval Improvement Streak!',message:(n,h)    => `${n} has had 3 consecutive improving intervals for "${h.name}"! Consistency is the key — and ${n} has it. 🔥` },
+        streak_5:       { label:'⚡ 5-Interval Improvement Streak!',message:(n,h)    => `${n} has achieved 5 consecutive improving intervals for "${h.name}"! That's not luck — that's real change. ⚡` },
+        week_free:      { label:'🗓️ One Full Week!',               message:(n,h)    => `${n} has gone a FULL WEEK without logging "${h.name}"! Seven days of strength and progress. Keep it going! 🗓️` },
+        month_free:     { label:'🌙 One Full Month!',              message:(n,h)    => `${n} has gone an entire MONTH without logging "${h.name}"! This is a life-changing achievement. Be proud! 🌙` }
+    };
+
+    function checkMilestones(habit) {
+        if (!habit.milestones) habit.milestones = [];
+        const earned = new Set(habit.milestones);
+        const newly  = [];
+        const ivs    = getIntervals(habit);
+        const cur    = getCurrentInterval(habit);
+
+        if (!earned.has('first_entry')    && habit.indulgences.length >= 1) newly.push('first_entry');
+        if (!earned.has('first_interval') && ivs.length >= 1)               newly.push('first_interval');
+
+        if (ivs.length >= 2) {
+            const firstIv = ivs[0].hours;
+            const best    = Math.max(...ivs.map(i=>i.hours));
+            if (!earned.has('doubled') && best >= firstIv*2) newly.push('doubled');
+            if (!earned.has('tripled') && best >= firstIv*3) newly.push('tripled');
+
+            // avg_doubled — repeating, resets on each achievement
+            {
+                const avg = getAverageInterval(ivs);
+                if (!habit.avgDoubledBaseline && ivs.length >= 1) habit.avgDoubledBaseline = ivs[0].hours;
+                if (habit.avgDoubledBaseline && avg >= habit.avgDoubledBaseline * 2) {
+                    newly.push('avg_doubled');
+                    habit.avgDoubledBaseline = avg;
+                }
+            }
+
+            if (!earned.has('streak_3') && ivs.length >= 3) {
+                const l3 = ivs.slice(-3);
+                if (l3[1].hours > l3[0].hours && l3[2].hours > l3[1].hours) newly.push('streak_3');
+            }
+            if (!earned.has('streak_5') && ivs.length >= 5) {
+                const l5 = ivs.slice(-5);
+                if (l5.every((iv,i) => i===0 || iv.hours > l5[i-1].hours)) newly.push('streak_5');
+            }
+        }
+
+        if (!earned.has('week_free')  && cur >= 24*7)  newly.push('week_free');
+        if (!earned.has('month_free') && cur >= 24*30) newly.push('month_free');
+
+        return newly;
+    }
+
+    function dismissMilestone() { state.activeMilestone = null; render(); }
+
+    function shareMilestone() {
+        if (!state.activeMilestone) return;
+        const { habitId, milestoneKey, count } = state.activeMilestone;
+        const habit = state.habits.find(h => h.id === habitId);
+        if (!habit) return;
+        const def  = MILESTONES[milestoneKey];
+        const text = def.message(state.userName, habit, count);
+        const shareData = {
+            title: `KeepingTrack: ${def.label}`,
+            text:  text + '\n\nTracked with KeepingTrack: https://keepingtrack.github.io'
+        };
+        if (navigator.share) {
+            navigator.share(shareData).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(shareData.text)
+                .then(()  => alert('Message copied to clipboard! Paste it anywhere to share. 🎉'))
+                .catch(()  => alert(shareData.text));
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // USER ACTIONS
+    // ═══════════════════════════════════════════════════════════════
+    async function saveNameFromInput() {
+        const input = document.getElementById('userNameInput');
+        if (input && input.value.trim()) {
+            state.userName     = input.value.trim();
+            state.showNamePrompt = false;
+            await saveToCloud();
+            render();
+        }
+    }
+
+    async function addHabit() {
+        const input = document.getElementById('newHabitName');
+        const name  = input ? input.value.trim() : '';
+        if (name) {
+            state.habits.push({ id: Date.now(), name, startDate: new Date().toISOString(), indulgences: [], milestones: [] });
+            state.showAddForm = false;
+            await saveToCloud();
+            render();
+        }
+    }
+
+    async function deleteHabit(id) {
+        if (confirm('Are you sure you want to delete this habit? All data will be lost.')) {
+            state.habits = state.habits.filter(h => h.id !== id);
+            await saveToCloud();
+            render();
+        }
+    }
+
+    async function logIndulgence(habitId, useCustomTime) {
+        let timestamp;
+        if (useCustomTime) {
+            const dateInput = document.getElementById(`logDate_${habitId}`);
+            const timeInput = document.getElementById(`logTime_${habitId}`);
+            if (!dateInput.value || !timeInput.value) { alert('Please select both date and time'); return; }
+            timestamp = new Date(dateInput.value + 'T' + timeInput.value).toISOString();
+        } else {
+            timestamp = new Date().toISOString();
+        }
+
+        state.habits = state.habits.map(h => {
+            if (h.id !== habitId) return h;
+            return { ...h, indulgences: [...h.indulgences, timestamp].sort() };
+        });
+
+        state.showLogForm = null;
+        await saveToCloud();
+
+        // milestone check
+        const updated = state.habits.find(h => h.id === habitId);
+        if (updated) {
+            const newly = checkMilestones(updated);
+            if (newly.length > 0) {
+                const milestoneKey = newly.at(-1);
+                state.habits = state.habits.map(h => {
+                    if (h.id !== habitId) return h;
+                    const oneTime      = newly.filter(m => m !== 'avg_doubled');
+                    const doublerCount = newly.filter(m => m === 'avg_doubled').length;
+                    return {
+                        ...h,
+                        milestones:         [...(h.milestones||[]), ...oneTime],
+                        avgDoubledCount:    (h.avgDoubledCount||0) + doublerCount,
+                        avgDoubledBaseline: h.avgDoubledBaseline
+                    };
+                });
+                await saveToCloud();
+                const displayHabit = state.habits.find(h => h.id === habitId);
+                const count = milestoneKey === 'avg_doubled' ? (displayHabit.avgDoubledCount||1) : null;
+                state.activeMilestone = { habitId, milestoneKey, count };
+            }
+        }
+        render();
+    }
+
+    async function deleteIndulgence(habitId, index) {
+        if (confirm('Delete this entry?')) {
+            state.habits = state.habits.map(h => {
+                if (h.id !== habitId) return h;
+                return { ...h, indulgences: h.indulgences.filter((_,i) => i !== index) };
+            });
+            await saveToCloud();
+            render();
+        }
+    }
+
+    function startEdit(habitId, index) {
+        state.editingEntry = `${habitId}-${index}`;
+        render();
+    }
+
+    async function updateIndulgence(habitId, index) {
+        const dateInput = document.getElementById(`editDate_${habitId}_${index}`);
+        const timeInput = document.getElementById(`editTime_${habitId}_${index}`);
+        if (dateInput && timeInput && dateInput.value && timeInput.value) {
+            const newDT = new Date(dateInput.value + 'T' + timeInput.value).toISOString();
+            state.habits = state.habits.map(h => {
+                if (h.id !== habitId) return h;
+                const ivs = [...h.indulgences];
+                ivs[index] = newDT;
+                return { ...h, indulgences: ivs.sort() };
+            });
+            state.editingEntry = null;
+            await saveToCloud();
+            render();
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // RENDER
+    // ═══════════════════════════════════════════════════════════════
+    function render() {
+        const root = document.getElementById('root');
+
+        // ── Not signed in → auth screen ──────────────────────────
+        if (!state.session) {
+            root.innerHTML = renderAuth();
+            return;
+        }
+
+        // ── Signed in → main app ─────────────────────────────────
+        let html = `<div class="container">`;
+
+        // Name prompt modal
+        if (state.showNamePrompt) {
+            html += `
+                <div class="modal">
+                    <div class="modal-content">
+                        <h2 class="modal-title">Welcome! 👋</h2>
+                        <p style="color:#6b7280;margin-bottom:24px;">Let's make this personal. What should we call you?</p>
+                        <input type="text" id="userNameInput" placeholder="Enter your first name" value="${state.userName}">
+                        <button class="btn-primary btn-full" onclick="saveNameFromInput()">Let's Go! 🚀</button>
+                        <p style="font-size:11px;color:#9ca3af;text-align:center;margin-top:12px;">You can change this anytime</p>
+                    </div>
+                </div>`;
+        }
+
+        // Milestone modal
+        if (state.activeMilestone) {
+            const { habitId, milestoneKey, count } = state.activeMilestone;
+            const habit = state.habits.find(h => h.id === habitId);
+            const def   = MILESTONES[milestoneKey];
+            if (habit && def) {
+                const emoji     = def.label.split(' ')[0];
+                const labelText = def.label.substring(def.label.indexOf(' ')+1);
+                const message   = def.message(state.userName, habit, count);
+                html += `
+                    <div class="milestone-modal" onclick="if(event.target===this)dismissMilestone()">
+                        <div class="milestone-content">
+                            <div class="milestone-emoji">${emoji}</div>
+                            <div class="milestone-label">${labelText}</div>
+                            <div class="milestone-message">${message}</div>
+                            <div class="milestone-buttons">
+                                <button class="btn-share"   onclick="shareMilestone()">📤 Share This Win</button>
+                                <button class="btn-dismiss" onclick="dismissMilestone()">Close</button>
+                            </div>
+                            <p style="font-size:11px;color:#9ca3af;margin-top:12px;">
+                                Tap "Share This Win" to send to family or friends 💙
+                            </p>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        // Sync status label
+        const syncLabel = {
+            idle:    '',
+            syncing: '☁️ Saving...',
+            saved:   '✓ Saved',
+            error:   '⚠️ Sync error'
+        }[state.syncStatus] || '';
+
+        const userEmail = state.session?.user?.email || state.session?.user?.user_metadata?.full_name || 'Signed in';
+
+        // Header
+        html += `
+            <div class="header">
+                <div class="header-top">
+                    <div></div>
+                    <div style="text-align:center;">
+                        <h1 class="title">${state.userName ? `${state.userName}'s Progress` : 'KeepingTrack'}</h1>
+                        <p class="subtitle">It's great that you're here! Track your trends and see progress naturally 🌟</p>
+                    </div>
+                    <div class="user-menu">
+                        <span class="sync-status ${state.syncStatus==='syncing'?'syncing':state.syncStatus==='error'?'error':''}">${syncLabel}</span>
+                        ${deferredInstallPrompt ? `<button class="btn-install" onclick="installApp()">📲 Install App</button>` : ''}
+                        <button class="btn-export" onclick="exportData()">📥 Export data</button>
+                        <button class="btn-signout" onclick="signOut()">Sign out (${userEmail})</button>
+                    </div>
+                </div>
+            </div>`;
+
+        // Empty state
+        if (state.habits.length === 0 && !state.showAddForm) {
+            html += `
+                <div class="empty-state">
+                    <div class="empty-icon">⏰</div>
+                    <p style="font-size:18px;color:#374151;margin-bottom:8px;">Ready to start your journey, ${state.userName}?</p>
+                    <p style="color:#6b7280;margin-bottom:24px;">Every small step counts. Let's track your first habit together! 💪</p>
+                </div>`;
+        }
+
+        // Add habit
+        if (!state.showAddForm) {
+            html += `<button class="btn-primary btn-full" onclick="state.showAddForm=true;render();" style="margin-bottom:24px;">➕ Add Habit to Track</button>`;
+        } else {
+            html += `
+                <div class="card">
+                    <h3 class="section-title">What habit would you like to work on, ${state.userName}?</h3>
+                    <p style="font-size:13px;color:#6b7280;margin-bottom:16px;">Remember, this is about progress, not perfection. We're here to support you! 🤗</p>
+                    <input type="text" id="newHabitName" placeholder="e.g., Smoking, Snacking, Phone scrolling...">
+                    <div class="btn-group">
+                        <button class="btn-primary"   onclick="addHabit()">Start Tracking</button>
+                        <button class="btn-secondary" onclick="state.showAddForm=false;render();">Cancel</button>
+                    </div>
+                </div>`;
+        }
+
+        // Habits
+        state.habits.forEach(habit => {
+            const ivs         = getIntervals(habit);
+            const cur         = getCurrentInterval(habit);
+            const trend       = getTrend(ivs);
+            const avg         = getAverageInterval(ivs);
+            const statusInfo  = getStatus(habit);
+            const allH        = [...ivs.map(i=>i.hours), cur];
+            const maxH        = Math.max(...allH);
+            const lastIv      = ivs.length > 0 ? ivs.at(-1).hours : null;
+            const curIsGood   = lastIv === null ? true : cur >= lastIv;
+
+            html += `
+                <div class="card">
+                    <div class="habit-header">
+                        <div>
+                            <h3 class="habit-title">${habit.name}</h3>
+                            <p class="habit-date">Tracking since ${new Date(habit.startDate).toLocaleDateString()}</p>
+                        </div>
+                        <button class="icon-btn delete" onclick="deleteHabit(${habit.id})" style="font-size:20px;">🗑️</button>
+                    </div>
+
+                    <div class="status-banner status-${statusInfo.status}">${statusInfo.message}</div>
+
+                    <div class="stats">
+                        <div class="stat-card ${curIsGood?'blue':'red'}">
+                            <div style="font-size:20px;">⏱️</div>
+                            <div class="stat-value">${habit.indulgences.length===0?'No data yet':formatDuration(cur)}</div>
+                            <div class="stat-label">Elapsed</div>
+                            <div class="stat-label">Try to keep going!</div>
+                        </div>
+                        <div class="stat-card blue">
+                            <div style="font-size:20px;">📊</div>
+                            <div class="stat-value">${ivs.length===0?'No data yet':formatDuration(avg)}</div>
+                            <div class="stat-label">Average Interval</div>
+                        </div>
+                        <div class="stat-card ${trend==='improving'?'green':trend==='declining'?'red':'gray'}">
+                            <div style="font-size:20px;">${trend==='improving'?'♥':trend==='declining'?'⛔':'♥'}</div>
+                            <div class="stat-value">${trend==='improving'?'Improving':trend==='declining'?'Declining':'Stable'}</div>
+                            <div class="stat-label">Current Trend</div>
+                        </div>
+                    </div>`;
+
+            // Chart
+            if (ivs.length > 0) {
+                const yLabels = [];
+                for (let i=5; i>=0; i--) yLabels.push(formatDuration((maxH/5)*i));
+                html += `
+                    <div class="chart">
+                        <h4 class="section-title">Your Progress Journey 📊</h4>
+                        <div class="chart-container">
+                            <div class="y-axis-title">Time Between</div>
+                            <div class="y-axis">${yLabels.map(l=>`<div class="y-axis-label">${l}</div>`).join('')}</div>
+                            <div class="chart-bars">`;
+
+                ivs.forEach((iv,idx) => {
+                    const h2 = Math.max((iv.hours/maxH)*100, 10);
+                    const improving = idx===0 || iv.hours >= ivs[idx-1].hours;
+                    html += `<div class="chart-bar ${improving?'green':'red'}" style="height:${h2}%"><div class="chart-bar-label">${formatDuration(iv.hours)}</div></div>`;
+                });
+
+                const curH = Math.max((cur/maxH)*100, 10);
+                html += `<div class="chart-bar ${curIsGood?'blue':'red'}" style="height:${curH}%"><div class="chart-bar-label">${formatDuration(cur)}</div></div>
+                            </div>
+                            <div class="x-axis">`;
+
+                if (ivs.length <= 7) {
+                    ivs.forEach(iv => { const d=new Date(iv.endDate); html+=`<div>${d.getMonth()+1}/${d.getDate()}</div>`; });
+                } else {
+                    const step = Math.floor((ivs.length-1)/5);
+                    [0, ...Array.from({length:5},(_,i)=>(i+1)*step), ivs.length-1]
+                        .filter((v,i,a)=>a.indexOf(v)===i && v<ivs.length)
+                        .forEach(i => { const d=new Date(ivs[i].endDate); html+=`<div>${d.getMonth()+1}/${d.getDate()}</div>`; });
+                }
+                html += `<div>Now</div></div>
+                            <div class="x-axis-title">Date</div>
+                        </div>
+                        <div class="chart-legend">
+                            <span>🟢 Growing stronger &nbsp; 🔴 Room to improve &nbsp; 🔵 Current (good!)</span>
+                            <span>${ivs.length+1} intervals</span>
+                        </div>
+                    </div>`;
+            }
+
+            // Log form
+            if (state.showLogForm === habit.id) {
+                html += `
+                    <div class="card" style="background:#f9fafb;padding:16px;margin-bottom:16px;">
+                        <h4 class="section-title">Log Occurrence</h4>
+                        <div class="date-time-grid">
+                            <div class="date-time-field"><label>Date</label><input type="date" id="logDate_${habit.id}"></div>
+                            <div class="date-time-field"><label>Time</label><input type="time" id="logTime_${habit.id}"></div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-primary"   onclick="logIndulgence(${habit.id},false)">Log Now</button>
+                            <button class="btn-primary"   onclick="logIndulgence(${habit.id},true)">Log Custom Time</button>
+                            <button class="btn-secondary" onclick="state.showLogForm=null;render();">✕</button>
+                        </div>
+                        <p style="font-size:12px;color:#6b7280;margin-top:8px;text-align:center;">💡 "Log Now" for current time, or pick a date &amp; time above</p>
+                    </div>`;
+            } else {
+                html += `<button class="btn-primary btn-full" onclick="state.showLogForm=${habit.id};render();" style="margin-bottom:16px;">Log Occurrence</button>`;
+            }
+
+            // History
+            if (habit.indulgences.length > 0) {
+                html += `
+                    <div>
+                        <h4 class="section-title">Your Journey (${habit.indulgences.length} logged)</h4>
+                        <p style="font-size:12px;color:#6b7280;margin-bottom:12px;">Every entry is a step toward understanding yourself better. Be honest and kind to yourself. 💙</p>
+                        <div style="max-height:240px;overflow-y:auto;">`;
+
+                habit.indulgences.forEach((ind, idx) => {
+                    const editKey = `${habit.id}-${idx}`;
+                    const dateObj = new Date(ind);
+                    const dateStr = dateObj.toISOString().split('T')[0];
+                    const timeStr = dateObj.toTimeString().split(' ')[0].substring(0,5);
+                    if (state.editingEntry === editKey) {
+                        html += `
+                            <div class="history-item">
+                                <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                                    <input type="date" id="editDate_${habit.id}_${idx}" value="${dateStr}" style="margin:0;padding:8px;font-size:14px;">
+                                    <input type="time" id="editTime_${habit.id}_${idx}" value="${timeStr}" style="margin:0;padding:8px;font-size:14px;">
+                                </div>
+                                <div class="history-actions">
+                                    <button class="icon-btn" onclick="updateIndulgence(${habit.id},${idx})" style="color:#10b981;">✓</button>
+                                    <button class="icon-btn" onclick="state.editingEntry=null;render();">✕</button>
+                                </div>
+                            </div>`;
+                    } else {
+                        html += `
+                            <div class="history-item">
+                                <span style="font-size:14px;">${dateObj.toLocaleString()}</span>
+                                <div class="history-actions">
+                                    <button class="icon-btn edit"   onclick="startEdit(${habit.id},${idx})">✏️</button>
+                                    <button class="icon-btn delete" onclick="deleteIndulgence(${habit.id},${idx})">🗑️</button>
+                                </div>
+                            </div>`;
+                    }
+                });
+                html += `</div></div>`;
+            }
+
+            html += `</div>`; // end habit card
+        });
+
+        html += `</div>`; // end container
+
+        html += `
+            <footer style="text-align:center;padding:32px 16px 16px;color:#6b7280;font-size:14px;margin-top:40px;border-top:1px solid #e5e7eb;">
+                <p style="margin-bottom:8px;">KeepingTrack's sourcecode is available at <a href="https://github.com/keepingtrack/keepingtrack.github.io">github.com/keepingtrack/keepingtrack.github.io</a></p>
+                <p style="font-size:12px;color:#9ca3af;">This is an opensource project under the MIT-License for the benefit of Mankind</p>
+                <p style="font-size:12px;color:#9ca3af;">Dedicated by Jonathan Blume in memory of his beloved son Israel</p>
+                <p style="font-size:12px;color:#9ca3af;">May his memory be a blessing</p>
+            </footer>`;
+
+        root.innerHTML = html;
+    }
+
+    function renderAuth() {
+        let inner = '';
+
+        if (state.authView === 'check-email') {
+            inner = `
+                <div class="auth-message success" style="margin-bottom:0;">
+                    ${state.authMessage?.text || 'Check your email for a magic link.'}
+                </div>
+                <p style="font-size:13px;color:#6b7280;margin-top:16px;">Once you tap the link in your email you'll be signed in automatically.</p>
+                <button class="btn-secondary" style="width:100%;margin-top:20px;" onclick="state.authView='choose';state.authMessage=null;render();">← Back</button>`;
+        } else if (state.authView === 'email') {
+            inner = `
+                <h2 class="auth-title" style="margin-bottom:8px;">Sign in with Email</h2>
+                <p class="auth-subtitle">We'll send you a magic link — no password needed.</p>
+                ${state.authMessage ? `<div class="auth-message ${state.authMessage.type}">${state.authMessage.text}</div>` : ''}
+                <input class="auth-input" type="email" id="authEmailInput" placeholder="your@email.com" value="${state.authEmail}"
+                    oninput="state.authEmail=this.value"
+                    onkeydown="if(event.key==='Enter')signInWithEmail()">
+                <button class="btn-email" onclick="signInWithEmail()" ${state.authLoading?'disabled':''}>
+                    ${state.authLoading ? 'Sending...' : '✉️ Send Magic Link'}
+                </button>
+                <button class="btn-secondary" style="width:100%;" onclick="state.authView='choose';state.authMessage=null;render();">← Back</button>`;
+        } else {
+            inner = `
+                <div class="auth-logo">⏰</div>
+                <h1 class="auth-title">KeepingTrack</h1>
+                <p class="auth-subtitle">Sign in to keep your data safe and accessible across all your devices.</p>
+                ${state.authMessage ? `<div class="auth-message ${state.authMessage.type}">${state.authMessage.text}</div>` : ''}
+                <button class="btn-google" onclick="signInWithGoogle()" ${state.authLoading?'disabled':''}>
+                    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4c-7.7 0-14.4 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.5 35.5 26.9 36 24 36c-5.2 0-9.5-2.9-11.3-7.1l-6.5 5C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.4-2.5 4.4-4.6 5.8l6.2 5.2C40.8 35.8 44 30.3 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+                    Continue with Google
+                </button>
+                <div class="auth-divider">or</div>
+                <button class="btn-email" onclick="state.authView='email';render();">✉️ Continue with Email</button>
+                <p class="auth-note">Your habit data is stored securely in the cloud and tied to your account. Sign in on any device to access it.</p>`;
+        }
+
+        return `
+            <div class="auth-screen">
+                <div class="auth-card">${inner}</div>
+            </div>`;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INIT — listen for auth state, then render
+    // ═══════════════════════════════════════════════════════════════
+    sb.auth.onAuthStateChange(async (event, session) => {
+        state.session = session;
+        if (session) {
+            await loadFromCloud();
+        } else {
+            render();
+        }
+    });
+
+    // Kick off — getSession handles the OAuth redirect case automatically
+    sb.auth.getSession().then(({ data: { session } }) => {
+        state.session = session;
+        if (session) {
+            loadFromCloud();
+        } else {
+            render();
+        }
+    });
+
     </script>
-    
-    <footer style="text-align: center; padding: 32px 16px 16px; color: #6b7280; font-size: 14px; margin-top: 40px; border-top: 1px solid #e5e7eb;">
-        <p style="margin-bottom: 8px;">KeepingTrack's sourcecode is available at <a href="https://github.com/keepingtrack/keepingtrack.github.io">https://github.com/keepingtrack/keepingtrack.github.io</a>
-        <p style="font-size: 12px; color: #9ca3af;">This is an opensource project under the MIT-License for the benefit of Mankind</p>
-        <p style="font-size: 12px; color: #9ca3af;">Dedicated by Jonathan Blume in memory of his beloved son Israel</p>
-        <p style="font-size: 12px; color: #9ca3af;">May his memory be a blessing</p>
-    </footer>
 </body>
 </html>
