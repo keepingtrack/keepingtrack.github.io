@@ -482,6 +482,7 @@
         state.userName = '';
         state.authView = 'choose';
         state.authMessage = null;
+        state.syncStatus = 'idle';
         render();
     }
 
@@ -1131,24 +1132,24 @@
     // ═══════════════════════════════════════════════════════════════
     // INIT — listen for auth state, then render
     // ═══════════════════════════════════════════════════════════════
+    let initialized = false;
+
     sb.auth.onAuthStateChange(async (event, session) => {
+        console.log('Auth event:', event, 'Session:', !!session);
         state.session = session;
-        if (session) {
+        if (session && !initialized) {
+            initialized = true;
             await loadFromCloud();
+        } else if (!session && !initialized) {
+            initialized = true;
+            render();
         } else {
             render();
         }
     });
 
-    // Kick off — getSession handles the OAuth redirect case automatically
-    sb.auth.getSession().then(({ data: { session } }) => {
-        state.session = session;
-        if (session) {
-            loadFromCloud();
-        } else {
-            render();
-        }
-    });
+    // Initial session check — this triggers onAuthStateChange
+    sb.auth.getSession();
 
     </script>
 </body>
