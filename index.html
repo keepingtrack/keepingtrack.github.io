@@ -567,7 +567,7 @@
             console.log('[saveToCloud] Payload:', payload);
             console.log('[saveToCloud] Calling upsert...');
             
-            const result = await supabaseFetch('/rest/v1/habits', {
+            const result = await supabaseFetch('/rest/v1/habits?on_conflict=user_id', {
                 method: 'POST',
                 headers: { 
                     'Prefer': 'resolution=merge-duplicates, return=minimal'
