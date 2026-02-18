@@ -515,6 +515,10 @@
             const error = await response.text();
             throw new Error(`${response.status}: ${error}`);
         }
+        // 201/204 with no content is success
+        if (response.status === 201 || response.status === 204) {
+            return null;
+        }
         const text = await response.text();
         return text ? JSON.parse(text) : null;
     }
@@ -561,10 +565,10 @@
             console.log('[saveToCloud] Payload:', payload);
             console.log('[saveToCloud] Calling upsert...');
             
-            await supabaseFetch('/rest/v1/habits', {
+            const result = await supabaseFetch('/rest/v1/habits', {
                 method: 'POST',
                 headers: { 
-                    'Prefer': 'resolution=merge-duplicates,return=representation'
+                    'Prefer': 'resolution=merge-duplicates, return=minimal'
                 },
                 body: JSON.stringify({
                     user_id: userId,
@@ -573,7 +577,7 @@
                 })
             });
             
-            console.log('[saveToCloud] Upsert completed');
+            console.log('[saveToCloud] Upsert completed, result:', result);
             state.syncStatus = 'saved';
             console.log('[saveToCloud] Success!');
         } catch (e) {
