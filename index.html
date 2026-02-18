@@ -530,19 +530,29 @@
     }
 
     async function saveToCloud() {
-        if (!state.session) return;
-        state.syncStatus = 'syncing'; render();
+        console.log('[saveToCloud] Starting, session:', !!state.session);
+        if (!state.session) {
+            console.log('[saveToCloud] No session, aborting');
+            return;
+        }
+        state.syncStatus = 'syncing'; 
+        render();
+        console.log('[saveToCloud] Status set to syncing, preparing payload');
         try {
             const userId = state.session.user.id;
             const payload = { habits: state.habits, userName: state.userName };
+            console.log('[saveToCloud] Payload:', payload);
+            console.log('[saveToCloud] Calling upsert...');
             const { error } = await sb
                 .from('habits')
                 .upsert({ user_id: userId, data: payload, updated_at: new Date().toISOString() },
                          { onConflict: 'user_id' });
+            console.log('[saveToCloud] Upsert completed, error:', error);
             if (error) throw error;
             state.syncStatus = 'saved';
+            console.log('[saveToCloud] Success!');
         } catch (e) {
-            console.error('Save error:', e);
+            console.error('[saveToCloud] Error caught:', e);
             state.syncStatus = 'error';
         }
         render();
