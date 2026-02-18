@@ -1398,8 +1398,42 @@
     }
 
     function renderAuth() {
-        let inner = '';
+        // Landing page (first visit)
+        if (!localStorage.getItem('seen-welcome')) {
+            return `
+                <div class="auth-screen">
+                    <div class="auth-card" style="max-width: 600px;">
+                        <div class="auth-logo">⏰</div>
+                        <h1 class="auth-title">KeepingTrack</h1>
+                        <p class="auth-subtitle">Help with Habits</p>
+                        
+                        <div style="text-align: left; margin: 24px 0; padding: 20px; background: #f5f3ff; border-radius: 12px; border-left: 4px solid #7c3aed;">
+                            <p style="margin-bottom: 12px; color: #374151; line-height: 1.6;">
+                                <strong>KeepingTrack</strong> helps you understand your habits by tracking when they happen and showing your progress in measurable intervals which you can work to improve over time, or simply maintain.
+                            </p>
+                            <p style="margin-bottom: 12px; color: #374151; line-height: 1.6;">
+                                This is a <strong>free, open-source project</strong> for the benefit of Mankind, dedicated to the memory of Israel Blume z"l.
+                            </p>
+                            <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
+                                <strong>Privacy matters:</strong> Your habit data belongs to you. We use Google or email sign-in for security (no passwords to manage), and your data is stored safely in the cloud so it's accessible from multiple devices.
+                            </p>
+                        </div>
 
+                        <button class="btn-primary btn-full" onclick="localStorage.setItem('seen-welcome','1'); render();" style="margin-top: 20px;">
+                            Get Started →
+                        </button>
+
+                        <p style="font-size: 11px; color: #9ca3af; margin-top: 16px; text-align: center;">
+                            Open source • MIT License • <a href="https://github.com/keepingtrack/keepingtrack.github.io" style="color: #7c3aed;">View on GitHub</a>
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Sign-in screen (after welcome)
+        let inner = '';
+        
         if (state.authView === 'check-email') {
             inner = `
                 <div class="auth-message success" style="margin-bottom:0;">
@@ -1422,8 +1456,8 @@
         } else {
             inner = `
                 <div class="auth-logo">⏰</div>
-                <h1 class="auth-title">KeepingTrack</h1>
-                <p class="auth-subtitle">Sign in to keep your data safe and accessible across all your devices.</p>
+                <h1 class="auth-title">Sign In</h1>
+                <p class="auth-subtitle">Choose how you'd like to sign in securely</p>
                 ${state.authMessage ? `<div class="auth-message ${state.authMessage.type}">${state.authMessage.text}</div>` : ''}
                 <button class="btn-google" onclick="signInWithGoogle()" ${state.authLoading?'disabled':''}>
                     <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.1 18.9 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4c-7.7 0-14.4 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.5 35.5 26.9 36 24 36c-5.2 0-9.5-2.9-11.3-7.1l-6.5 5C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.4-2.5 4.4-4.6 5.8l6.2 5.2C40.8 35.8 44 30.3 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
@@ -1431,7 +1465,9 @@
                 </button>
                 <div class="auth-divider">or</div>
                 <button class="btn-email" onclick="state.authView='email';render();">✉️ Continue with Email</button>
-                <p class="auth-note">Your habit data is stored securely in the cloud and tied to your account. Sign in on any device to access it.</p>`;
+                <p class="auth-note" style="font-size: 12px; line-height: 1.5;">
+                    <strong>Why we use Google/Email sign-in:</strong> KeepingTrack is a free, not-for-profit service. We use community resources (Google OAuth, Supabase) that are also free, which lets us offer this app at no cost forever. Your data is securely stored and only accessible by you.
+                </p>`;
         }
 
         return `
