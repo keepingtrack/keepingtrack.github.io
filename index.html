@@ -392,7 +392,16 @@
     // ═══════════════════════════════════════════════════════════════
     const SUPABASE_URL = 'https://nvftcjndmgluapizpqlj.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_2JBZI6lhZw3_AOIS48vRZw_r9JWlnDQ';
-    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+            flowType: 'pkce',
+            detectSessionInUrl: true,
+            persistSession: true,
+            storageKey: 'keepingtrack-auth',
+            storage: window.localStorage,
+            lock: false  // Disable lock to prevent multi-tab conflicts
+        }
+    });
 
     // ═══════════════════════════════════════════════════════════════
     // PWA INSTALL
