@@ -853,69 +853,111 @@
         const habit = state.habits.find(h => h.id === habitId);
         if (!habit) return;
         const def = MILESTONES[milestoneKey];
-        const emoji = def.label.split(' ')[0];
-        const labelText = def.label.substring(def.label.indexOf(' ') + 1);
         const message = def.message(state.userName, habit, count);
+
+        // Milestone-specific decorative emojis
+        const decorations = {
+            first_entry: { main: '👣', accent: '✨', color1: '#fef3c7', color2: '#fde68a' },
+            first_interval: { main: '📊', accent: '🎯', color1: '#dbeafe', color2: '#bfdbfe' },
+            doubled: { main: '🏆', accent: '✨', color1: '#fed7aa', color2: '#fdba74' },
+            tripled: { main: '🥇', accent: '🎺', color1: '#fef08a', color2: '#fde047' },
+            avg_doubled: { main: '🗼', accent: '🚀', color1: '#d9f99d', color2: '#bef264' },
+            streak_3: { main: '🔥', accent: '🙌', color1: '#fecaca', color2: '#fca5a5' },
+            streak_5: { main: '⚡', accent: '🫡', color1: '#fbcfe8', color2: '#f9a8d4' },
+            week_free: { main: '🛳️', accent: '⛳', color1: '#bae6fd', color2: '#7dd3fc' },
+            month_free: { main: '🏅', accent: '🫶', color1: '#c7d2fe', color2: '#a5b4fc' }
+        };
+
+        const deco = decorations[milestoneKey] || { main: '✨', accent: '🎉', color1: '#e9d5ff', color2: '#d8b4fe' };
 
         // Generate image
         const canvas = document.createElement('canvas');
         canvas.width = 800;
-        canvas.height = 600;
+        canvas.height = 800;
         const ctx = canvas.getContext('2d');
 
-        // Gradient background
-        const gradient = ctx.createLinearGradient(0, 0, 800, 600);
-        gradient.addColorStop(0, '#7c3aed');
-        gradient.addColorStop(1, '#2563eb');
+        // Sunny gradient background (yellow to sky blue)
+        const gradient = ctx.createLinearGradient(0, 0, 800, 800);
+        gradient.addColorStop(0, '#fef08a');  // sunshine yellow
+        gradient.addColorStop(1, '#7dd3fc');  // sky blue
         ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 800, 600);
+        ctx.fillRect(0, 0, 800, 800);
 
-        // Emoji
-        ctx.font = 'bold 120px sans-serif';
+        // Logo icon at top (bar chart representing the app)
+        ctx.fillStyle = 'rgba(124, 58, 237, 0.9)';
+        const barHeights = [40, 55, 70, 85, 100];
+        const barX = 320;
+        barHeights.forEach((h, i) => {
+            ctx.fillRect(barX + i * 30, 100 - h, 25, h);
+        });
+
+        // App name under logo
+        ctx.fillStyle = '#581c87';
+        ctx.font = 'bold 28px system-ui';
         ctx.textAlign = 'center';
-        ctx.fillText(emoji, 400, 160);
+        ctx.fillText('KeepingTrack', 400, 130);
 
-        // Label
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 48px sans-serif';
-        ctx.fillText(labelText, 400, 250);
+        // Decorative emojis scattered
+        ctx.font = '48px sans-serif';
+        ctx.fillText(deco.accent, 150, 100);
+        ctx.fillText(deco.accent, 650, 100);
+        ctx.fillText('✨', 100, 300);
+        ctx.fillText('✨', 700, 300);
 
-        // Message box
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-        ctx.fillRect(60, 300, 680, 200);
-        
-        // Message text (wrap)
-        ctx.fillStyle = '#374151';
-        ctx.font = '24px sans-serif';
+        // Main milestone emoji (large)
+        ctx.font = 'bold 140px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(deco.main, 400, 270);
+
+        // Victory emoji
+        ctx.font = '80px sans-serif';
+        ctx.fillText('🕺', 550, 350);
+
+        // Message area (transparent with colorful text)
+        const msgGradient = ctx.createLinearGradient(0, 400, 0, 600);
+        msgGradient.addColorStop(0, deco.color1);
+        msgGradient.addColorStop(1, deco.color2);
+        ctx.fillStyle = msgGradient;
+        ctx.fillRect(40, 400, 720, 280);
+
+        // Border for message area
+        ctx.strokeStyle = 'rgba(124, 58, 237, 0.3)';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(40, 400, 720, 280);
+
+        // Message text (word wrap with nice font)
+        ctx.fillStyle = '#1f2937';
+        ctx.font = 'bold 26px system-ui';
         ctx.textAlign = 'left';
         const words = message.split(' ');
         let line = '';
-        let y = 340;
-        const maxWidth = 640;
+        let y = 445;
+        const maxWidth = 680;
+        
         for (let word of words) {
             const testLine = line + word + ' ';
             const metrics = ctx.measureText(testLine);
             if (metrics.width > maxWidth && line !== '') {
-                ctx.fillText(line, 80, y);
+                ctx.fillText(line, 60, y);
                 line = word + ' ';
-                y += 32;
+                y += 36;
+                if (y > 650) break; // Don't overflow
             } else {
                 line = testLine;
             }
         }
-        ctx.fillText(line, 80, y);
+        ctx.fillText(line, 60, y);
 
-        // Branding
-        ctx.fillStyle = 'white';
-        ctx.font = '20px sans-serif';
+        // Trophy at bottom
+        ctx.font = '48px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('KeepingTrack - keepingtrack.github.io', 400, 560);
+        ctx.fillText('🏆', 400, 750);
 
         // Convert to blob and share
         canvas.toBlob(async (blob) => {
             const file = new File([blob], 'milestone.png', { type: 'image/png' });
             const shareData = {
-                title: `KeepingTrack: ${def.label}`,
+                title: `KeepingTrack Milestone!`,
                 text: message,
                 files: [file]
             };
@@ -924,7 +966,6 @@
                 try {
                     await navigator.share(shareData);
                 } catch (e) {
-                    // Fallback to text only
                     fallbackShare(message);
                 }
             } else {
@@ -933,17 +974,16 @@
         }, 'image/png');
 
         function fallbackShare(text) {
-            const fullText = text + '\n\nTracked with KeepingTrack: https://keepingtrack.github.io';
+            const fullText = text + '\n\n🎉 Tracked with KeepingTrack: https://keepingtrack.github.io';
             if (navigator.share) {
-                navigator.share({ title: `KeepingTrack: ${def.label}`, text: fullText }).catch(() => {});
+                navigator.share({ title: 'KeepingTrack Milestone!', text: fullText }).catch(() => {});
             } else {
                 navigator.clipboard.writeText(fullText).then(() => {
-                    alert('Message copied to clipboard! 🎉');
+                    alert('🎉 Milestone copied to clipboard!');
                 }).catch(() => alert(fullText));
             }
         }
     }
-
     // ═══════════════════════════════════════════════════════════════
     // USER ACTIONS
     // ═══════════════════════════════════════════════════════════════
