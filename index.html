@@ -563,7 +563,9 @@
             
             await supabaseFetch('/rest/v1/habits', {
                 method: 'POST',
-                headers: { 'Prefer': 'resolution=merge-duplicates' },
+                headers: { 
+                    'Prefer': 'resolution=merge-duplicates,return=representation'
+                },
                 body: JSON.stringify({
                     user_id: userId,
                     data: payload,
