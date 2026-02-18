@@ -847,23 +847,100 @@
 
     function dismissMilestone() { state.activeMilestone = null; render(); }
 
-    function shareMilestone() {
+    async function shareMilestone() {
         if (!state.activeMilestone) return;
         const { habitId, milestoneKey, count } = state.activeMilestone;
         const habit = state.habits.find(h => h.id === habitId);
         if (!habit) return;
-        const def  = MILESTONES[milestoneKey];
-        const text = def.message(state.userName, habit, count);
-        const shareData = {
-            title: `KeepingTrack: ${def.label}`,
-            text:  text + '\n\nTracked with KeepingTrack: https://keepingtrack.github.io'
-        };
-        if (navigator.share) {
-            navigator.share(shareData).catch(() => {});
-        } else {
-            navigator.clipboard.writeText(shareData.text)
-                .then(()  => alert('Message copied to clipboard! Paste it anywhere to share. 🎉'))
-                .catch(()  => alert(shareData.text));
+        const def = MILESTONES[milestoneKey];
+        const emoji = def.label.split(' ')[0];
+        const labelText = def.label.substring(def.label.indexOf(' ') + 1);
+        const message = def.message(state.userName, habit, count);
+
+        // Generate image
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+
+        // Gradient background
+        const gradient = ctx.createLinearGradient(0, 0, 800, 600);
+        gradient.addColorStop(0, '#7c3aed');
+        gradient.addColorStop(1, '#2563eb');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 800, 600);
+
+        // Emoji
+        ctx.font = 'bold 120px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(emoji, 400, 160);
+
+        // Label
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 48px sans-serif';
+        ctx.fillText(labelText, 400, 250);
+
+        // Message box
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+        ctx.fillRect(60, 300, 680, 200);
+        
+        // Message text (wrap)
+        ctx.fillStyle = '#374151';
+        ctx.font = '24px sans-serif';
+        ctx.textAlign = 'left';
+        const words = message.split(' ');
+        let line = '';
+        let y = 340;
+        const maxWidth = 640;
+        for (let word of words) {
+            const testLine = line + word + ' ';
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && line !== '') {
+                ctx.fillText(line, 80, y);
+                line = word + ' ';
+                y += 32;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, 80, y);
+
+        // Branding
+        ctx.fillStyle = 'white';
+        ctx.font = '20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('KeepingTrack - keepingtrack.github.io', 400, 560);
+
+        // Convert to blob and share
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], 'milestone.png', { type: 'image/png' });
+            const shareData = {
+                title: `KeepingTrack: ${def.label}`,
+                text: message,
+                files: [file]
+            };
+            
+            if (navigator.canShare && navigator.canShare(shareData)) {
+                try {
+                    await navigator.share(shareData);
+                } catch (e) {
+                    // Fallback to text only
+                    fallbackShare(message);
+                }
+            } else {
+                fallbackShare(message);
+            }
+        }, 'image/png');
+
+        function fallbackShare(text) {
+            const fullText = text + '\n\nTracked with KeepingTrack: https://keepingtrack.github.io';
+            if (navigator.share) {
+                navigator.share({ title: `KeepingTrack: ${def.label}`, text: fullText }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(fullText).then(() => {
+                    alert('Message copied to clipboard! 🎉');
+                }).catch(() => alert(fullText));
+            }
         }
     }
 
