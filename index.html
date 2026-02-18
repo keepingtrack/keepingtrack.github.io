@@ -496,34 +496,50 @@
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // DATA SYNC — Supabase is the single source of truth
+    // DATA SYNC — Direct REST API calls (SDK hangs, so we bypass it)
     // ═══════════════════════════════════════════════════════════════
+    async function supabaseFetch(path, options = {}) {
+        const headers = {
+            'apikey': SUPABASE_KEY,
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+        if (state.session) {
+            headers['Authorization'] = `Bearer ${state.session.access_token}`;
+        }
+        const response = await fetch(`${SUPABASE_URL}${path}`, {
+            ...options,
+            headers
+        });
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`${response.status}: ${error}`);
+        }
+        return response.json();
+    }
+
     async function loadFromCloud() {
         if (!state.session) return;
         state.syncStatus = 'syncing'; render();
+        console.log('[loadFromCloud] Starting');
         try {
             const userId = state.session.user.id;
-            const { data, error } = await sb
-                .from('habits')
-                .select('data')
-                .eq('user_id', userId)
-                .single();
+            const data = await supabaseFetch(`/rest/v1/habits?user_id=eq.${userId}&select=data`);
+            console.log('[loadFromCloud] Response:', data);
 
-            if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
-
-            if (data) {
-                const parsed = data.data;
+            if (data && data.length > 0) {
+                const parsed = data[0].data;
                 state.habits   = parsed.habits   || [];
                 state.userName = parsed.userName || '';
                 if (!state.userName) state.showNamePrompt = true;
             } else {
-                // First time user — no data yet
                 state.habits = [];
                 state.showNamePrompt = true;
             }
             state.syncStatus = 'saved';
+            console.log('[loadFromCloud] Success');
         } catch (e) {
-            console.error('Load error:', e);
+            console.error('[loadFromCloud] Error:', e);
             state.syncStatus = 'error';
         }
         render();
@@ -543,14 +559,18 @@
             const payload = { habits: state.habits, userName: state.userName };
             console.log('[saveToCloud] Payload:', payload);
             console.log('[saveToCloud] Calling upsert...');
-            const { error } = await sb
-                .from('habits')
-                .upsert(
-                    { user_id: userId, data: payload, updated_at: new Date().toISOString() },
-                    { onConflict: 'user_id', ignoreDuplicates: false }
-                );
-            console.log('[saveToCloud] Upsert completed, error:', error);
-            if (error) throw error;
+            
+            await supabaseFetch('/rest/v1/habits', {
+                method: 'POST',
+                headers: { 'Prefer': 'resolution=merge-duplicates' },
+                body: JSON.stringify({
+                    user_id: userId,
+                    data: payload,
+                    updated_at: new Date().toISOString()
+                })
+            });
+            
+            console.log('[saveToCloud] Upsert completed');
             state.syncStatus = 'saved';
             console.log('[saveToCloud] Success!');
         } catch (e) {
