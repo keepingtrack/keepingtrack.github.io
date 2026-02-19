@@ -1403,13 +1403,13 @@
             return `
                 <div class="auth-screen">
                     <div class="auth-card" style="max-width: 600px;">
-                        <div class="auth-logo">⏰</div>
+                        <img src="icon-192.png" alt="KeepingTrack" style="width: 120px; height: 120px; margin: 0 auto 16px;">
                         <h1 class="auth-title">KeepingTrack</h1>
                         <p class="auth-subtitle">Help with Habits</p>
                         
                         <div style="text-align: left; margin: 24px 0; padding: 20px; background: #f5f3ff; border-radius: 12px; border-left: 4px solid #7c3aed;">
                             <p style="margin-bottom: 12px; color: #374151; line-height: 1.6;">
-                                <strong>KeepingTrack</strong> helps you understand your habits by tracking when they happen and showing your progress in measurable intervals which you can work to improve over time, or simply maintain.
+                                <strong>KeepingTrack</strong> helps you understand your habits by tracking when they happen and showing your progress in measurable intervals which you can work to improve over time, or at least maintain.
                             </p>
                             <p style="margin-bottom: 12px; color: #374151; line-height: 1.6;">
                                 This is a <strong>free, open-source project</strong> for the benefit of Mankind, dedicated to the memory of Israel Blume z"l.
@@ -1431,7 +1431,33 @@
             `;
         }
 
-        // Sign-in screen (after welcome)
+        // Privacy explanation (second screen)
+        if (!localStorage.getItem('seen-privacy')) {
+            return `
+                <div class="auth-screen">
+                    <div class="auth-card" style="max-width: 600px;">
+                        <img src="icon-192.png" alt="KeepingTrack" style="width: 100px; height: 100px; margin: 0 auto 16px;">
+                        <h1 class="auth-title" style="font-size: 32px;">Privacy that's Free</h1>
+                        
+                        <div style="margin: 32px 0; text-align: center;">
+                            <div style="display: inline-block; transform: rotate(-35deg); box-shadow: 0 8px 24px rgba(0,0,0,0.15); border-radius: 12px; overflow: hidden; border: 3px solid #e5e7eb;">
+                                <img src="OAuth.jpg" alt="Google Sign-in Preview" style="display: block; width: 280px; height: auto;">
+                            </div>
+                        </div>
+
+                        <p style="color: #374151; font-size: 15px; line-height: 1.7; margin: 24px 0; text-align: center;">
+                            KeepingTrack uses Google/Email sign-in together with other free community resources like GitHub and Supabase. Since KeepingTrack is a free, not-for-profit service, this lets us keep your data safe and accessible only to you, while keeping our app free forever.
+                        </p>
+
+                        <button class="btn-primary btn-full" onclick="localStorage.setItem('seen-privacy','1'); render();" style="margin-top: 24px;">
+                            Continue to Sign In →
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Sign-in screen
         let inner = '';
         
         if (state.authView === 'check-email') {
@@ -1455,7 +1481,7 @@
                 <button class="btn-secondary" style="width:100%;" onclick="state.authView='choose';state.authMessage=null;render();">← Back</button>`;
         } else {
             inner = `
-                <div class="auth-logo">⏰</div>
+                <img src="icon-192.png" alt="KeepingTrack" style="width: 100px; height: 100px; margin: 0 auto 16px;">
                 <h1 class="auth-title">Sign In</h1>
                 <p class="auth-subtitle">Choose how you'd like to sign in securely</p>
                 ${state.authMessage ? `<div class="auth-message ${state.authMessage.type}">${state.authMessage.text}</div>` : ''}
@@ -1464,10 +1490,7 @@
                     Continue with Google
                 </button>
                 <div class="auth-divider">or</div>
-                <button class="btn-email" onclick="state.authView='email';render();">✉️ Continue with Email</button>
-                <p class="auth-note" style="font-size: 12px; line-height: 1.5;">
-                    <strong>Why we use Google/Email sign-in:</strong> KeepingTrack is a free, not-for-profit service. We use community resources (Google OAuth, Supabase) that are also free, which lets us offer this app at no cost forever. Your data is securely stored and only accessible by you.
-                </p>`;
+                <button class="btn-email" onclick="state.authView='email';render();">✉️ Continue with Email</button>`;
         }
 
         return `
