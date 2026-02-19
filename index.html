@@ -793,7 +793,7 @@
 
     const MILESTONES = {
         first_entry:    { label:'🌱 First Step!',                  message:(n,h)    => `${n} logged their very first entry for "${h.name}". Every journey starts with a single step — and this is yours! 💙` },
-        first_interval: { label:'📊 First Interval Tracked!',      message:(n,h)    => { const iv=getIntervals(h); return `${n} has completed their first tracked interval for "${h.name}" — ${formatDuration(iv[0]?.hours||0)}. Now the real progress begins! 🚀`; } },
+        first_interval: { label:'🥇 First Interval Tracked!',      message:(n,h)    => { const iv=getIntervals(h); return `${n} has completed their first tracked interval for "${h.name}" — ${formatDuration(iv[0]?.hours||0)}. Now the real progress begins! 📊🚀`; } },
         doubled:        { label:'🎉 Doubled Their Best!',           message:(n,h)    => { const best=Math.max(...getIntervals(h).map(i=>i.hours)); return `${n} has more than DOUBLED their best interval for "${h.name}", reaching ${formatDuration(best)}! Incredible progress. 🎊`; } },
         tripled:        { label:'🏆 Tripled Their Best!',           message:(n,h)    => { const best=Math.max(...getIntervals(h).map(i=>i.hours)); return `${n} has TRIPLED their best interval for "${h.name}", now at ${formatDuration(best)}! Outstanding dedication. 🌟`; } },
         avg_doubled:    { label:'📈 Average Interval Doubled!',     message:(n,h,c)  => { const avg=getAverageInterval(getIntervals(h)); const times=c>1?` for the ${ordinal(c)} time`:``; return `${n}'s average interval for "${h.name}" has DOUBLED${times}! Now averaging ${formatDuration(avg)}. Every improvement builds on the last. 📈`; } },
@@ -858,7 +858,7 @@
         // Milestone-specific decorative emojis
         const decorations = {
             first_entry: { main: '👣', accent: '✨', color1: '#fef3c7', color2: '#fde68a' },
-            first_interval: { main: '📊', accent: '🎯', color1: '#dbeafe', color2: '#bfdbfe' },
+            first_interval: { main: '🥇', accent: '📊', color1: '#dbeafe', color2: '#bfdbfe' },
             doubled: { main: '🏆', accent: '✨', color1: '#fed7aa', color2: '#fdba74' },
             tripled: { main: '🥇', accent: '🎺', color1: '#fef08a', color2: '#fde047' },
             avg_doubled: { main: '🗼', accent: '🚀', color1: '#d9f99d', color2: '#bef264' },
@@ -879,7 +879,7 @@
         // Sunny gradient background (yellow to sky blue)
         const gradient = ctx.createLinearGradient(0, 0, 800, 800);
         gradient.addColorStop(0, '#fef08a');  // sunshine yellow
-        gradient.addColorStop(1, '#7dd3fc');  // sky blue
+        gradient.addColorStop(1, '#87CEEB');  // sky blue
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 800, 800);
 
