@@ -883,13 +883,47 @@
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 800, 800);
 
-        // Logo icon at top (bar chart representing the app)
-        ctx.fillStyle = 'rgba(124, 58, 237, 0.9)';
-        const barHeights = [40, 55, 70, 85, 100];
-        const barX = 320;
-        barHeights.forEach((h, i) => {
-            ctx.fillRect(barX + i * 30, 100 - h, 25, h);
-        });
+// 1. BACKGROUND: Yellow-to-Blue Gradient
+// Drawing this first so it sits behind the chart
+const bgGradient = ctx.createLinearGradient(0, 0, 0, 200);
+bgGradient.addColorStop(0, '#FDE047'); // Bright yellow top
+bgGradient.addColorStop(1, '#99F6E4'); // Light teal bottom
+
+// Frame the icon area (adjust these dimensions if your canvas is larger)
+ctx.fillStyle = bgGradient;
+ctx.beginPath();
+ctx.roundRect(300, 0, 185, 180, 20); // Rounded container like your icon
+ctx.fill();
+
+// 2. BARS: Your original heights and spacing
+const barHeights = [40, 55, 70, 85, 100]; 
+const barX = 320;
+const barWidth = 25;
+const spacing = 30;
+const chartBottom = 120; // Lowered slightly to fit within the new frame
+
+const barColors = ['#E53935', '#90A4AE', '#546E7A', '#43A047', '#2E7D32'];
+
+barHeights.forEach((h, i) => {
+    ctx.fillStyle = barColors[i];
+    const x = barX + i * spacing;
+    const y = chartBottom - h;
+    
+    ctx.beginPath();
+    ctx.roundRect(x, y, barWidth, h, [5, 5, 0, 0]); 
+    ctx.fill();
+});
+
+// 3. TEXT: Centered "KT"
+ctx.fillStyle = '#1E3A8A'; // Deep navy blue
+ctx.font = 'bold 28px Arial';
+ctx.textAlign = 'center';
+
+// Calculating center based on your 145px chart width
+const chartWidth = (barHeights.length - 1) * spacing + barWidth;
+const centerX = barX + (chartWidth / 2);
+
+ctx.fillText('KT', centerX, chartBottom + 40);
 
         // App name under logo
         ctx.fillStyle = '#581c87';
